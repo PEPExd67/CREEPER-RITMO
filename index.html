@@ -1,1412 +1,326 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Cyberpunk DJ Studio Ultra - 200+ Ritmos DJ Edition</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Orbitron:wght@500;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            pixel: ['"Press Start 2P"', 'monospace'],
-            crt: ['"VT323"', 'monospace'],
-            cyber: ['Orbitron', 'sans-serif'],
-            sans: ['Inter', 'sans-serif'],
-          },
-          colors: {
-            retroBg: '#030508',
-            retroPanel: '#080d14',
-            retroCard: '#0f1724',
-            retroBorder: '#162838',
-            phonkGold: '#FFD700',
-            phonkPurple: '#A855F7',
-            creeperGreen: '#00FF66',
-            creeperMid: '#00AA00',
-            creeperDark: '#005500',
-            neonCyan: '#00E5FF',
-            neonPink: '#FF0077',
-            neonOrange: '#FF6600',
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    * {
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    .pixelated {
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-    }
-
-    .crt-overlay {
-      position: relative;
-    }
-    .crt-overlay::before {
-      content: " ";
-      display: block;
-      position: absolute;
-      top: 0; left: 0; bottom: 0; right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%), linear-gradient(90deg, rgba(168, 85, 247, 0.03), rgba(0, 255, 102, 0.02), rgba(0, 229, 255, 0.03));
-      z-index: 10;
-      background-size: 100% 4px, 6px 100%;
-      pointer-events: none;
-      border-radius: inherit;
-    }
-
-    .glow-phonk { box-shadow: 0 0 18px rgba(168, 85, 247, 0.5); }
-    .glow-gold { box-shadow: 0 0 18px rgba(255, 215, 0, 0.5); }
-    .glow-creeper { box-shadow: 0 0 18px rgba(0, 255, 102, 0.5); }
-
-    input[type=range] {
-      -webkit-appearance: none;
-      background: #0f1724;
-      border: 1px solid #162838;
-      border-radius: 6px;
-      height: 8px;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 20px;
-      width: 16px;
-      border-radius: 4px;
-      background: #FFD700;
-      cursor: pointer;
-      box-shadow: 0 0 10px #FFD700;
-      border: 1px solid #ffffff;
-    }
-
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #030508; }
-    ::-webkit-scrollbar-thumb { background: #162838; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #A855F7; }
-
-    .pad-active {
-      transform: scale(0.92) !important;
-      filter: brightness(1.8) !important;
-      box-shadow: 0 0 30px #FFD700 !important;
-    }
-  </style>
-</head>
-<body class="bg-retroBg text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-phonkGold selection:text-black">
-
-  <!-- ========================================================================= -->
-  <!-- TOUCH OVERLAY UNLOCK FOR MOBILE BROWSERS (iOS / ANDROID)                 -->
-  <!-- ========================================================================= -->
-  <div id="touchUnlockOverlay" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center cursor-pointer transition-opacity duration-300">
-    <div class="max-w-md bg-retroPanel border-2 border-phonkGold p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 glow-gold animate-pulse">
-      <div class="w-16 h-16 rounded-full bg-phonkGold/20 border-2 border-phonkGold flex items-center justify-center text-phonkGold text-2xl">
-        <i class="fa-solid fa-play"></i>
-      </div>
-      <h2 class="font-pixel text-xs sm:text-sm text-phonkGold tracking-wider">TOCA EN CUALQUIER LUGAR PARA ACTIVAR ESTUDIO DJ</h2>
-      <p class="text-xs text-slate-300 font-crt text-lg">Desbloquea el sintetizador Web Audio con 200 ritmos continuos y compatibilidad táctil.</p>
-      <button class="mt-2 px-6 py-3 bg-phonkGold hover:bg-yellow-400 text-black font-pixel text-xs rounded-xl shadow-lg font-bold">
-        ¡INICIAR ESTUDIO DJ!
-      </button>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- 1. NAVBAR DE CONTROL MAESTRO                                              -->
-  <!-- ========================================================================= -->
-  <header class="bg-retroPanel border-b-2 border-retroBorder px-3 py-2.5 sticky top-0 z-30 shadow-2xl">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-      
-      <!-- LOGO & TITULO -->
-      <div class="flex items-center gap-2.5">
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-phonkGold via-phonkPurple to-creeperGreen p-0.5 glow-gold">
-          <div class="w-full h-full bg-black rounded-md flex items-center justify-center text-phonkGold text-lg">
-            <i class="fa-solid fa-record-vinyl"></i>
-          </div>
-        </div>
-        <div>
-          <h1 class="font-pixel text-[11px] sm:text-xs md:text-sm text-phonkGold tracking-wider flex items-center gap-1.5 flex-wrap">
-            CYBERPUNK DJ STUDIO <span class="bg-purple-950 text-phonkPurple border border-phonkPurple text-[8px] px-1.5 py-0.5 rounded font-cyber">200 RITMOS</span>
-          </h1>
-          <p class="text-[11px] sm:text-xs text-slate-400 font-crt text-base tracking-wider hidden sm:block">Compatibilidad Táctil + Phonk, EDM, Techno, Dembow & Arduino 10 LEDs</p>
-        </div>
-      </div>
-
-      <!-- MASTER CONTROLS -->
-      <div class="flex items-center gap-2 flex-wrap bg-retroBg/90 px-3 py-1.5 rounded-xl border border-retroBorder shadow-inner text-xs">
-        
-        <!-- VOLUMEN MASTER -->
-        <div class="flex items-center gap-1.5">
-          <i class="fa-solid fa-volume-high text-phonkGold text-[11px]"></i>
-          <div class="flex flex-col">
-            <div class="flex justify-between items-center text-[8px] font-pixel text-slate-400">
-              <span>VOL</span>
-              <span id="lblMasterVol" class="text-phonkGold">85%</span>
-            </div>
-            <input id="rngMasterVol" type="range" min="0" max="100" value="85" class="w-14 sm:w-16 accent-phonkGold" />
-          </div>
-        </div>
-
-        <div class="h-5 w-px bg-retroBorder hidden sm:block"></div>
-
-        <!-- VOLTAJE / TEMPO BPM -->
-        <div class="flex items-center gap-1.5">
-          <i class="fa-solid fa-bolt text-phonkPurple text-[11px]"></i>
-          <div class="flex flex-col">
-            <div class="flex justify-between items-center text-[8px] font-pixel text-slate-400">
-              <span>BPM</span>
-              <span id="lblVoltageBpm" class="text-phonkPurple">140BPM</span>
-            </div>
-            <input id="rngVoltageBpm" type="range" min="60" max="220" value="140" class="w-16 sm:w-20 accent-phonkPurple" />
-          </div>
-        </div>
-
-        <div class="h-5 w-px bg-retroBorder hidden sm:block"></div>
-
-        <!-- DUAL DJ FILTER -->
-        <div class="flex items-center gap-1.5">
-          <i class="fa-solid fa-sliders text-neonCyan text-[11px]"></i>
-          <div class="flex flex-col">
-            <div class="flex justify-between items-center text-[8px] font-pixel text-slate-400">
-              <span>FILTRO</span>
-              <span id="lblDualFilter" class="text-neonCyan">NEUTRO</span>
-            </div>
-            <input id="rngDualFilter" type="range" min="-100" max="100" value="0" class="w-16 sm:w-20 accent-neonCyan" />
-          </div>
-        </div>
-
-        <div class="h-5 w-px bg-retroBorder hidden sm:block"></div>
-
-        <!-- STOP ALL EMERGENCY BUTTON -->
-        <button id="btnStopAll" class="px-3 py-2 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-pixel text-[9px] rounded-xl border border-red-400 shadow-md flex items-center gap-1 font-bold">
-          <i class="fa-solid fa-stop text-xs"></i> APAGAR TODO
-        </button>
-
-      </div>
-
-      <!-- BOTONES WEB SERIAL & CÓDIGO FIRMWARE -->
-      <div class="flex items-center gap-1.5">
-        <button id="btnConnectSerial" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-pixel text-[9px] rounded-lg flex items-center gap-1.5 transition shadow-md">
-          <i class="fa-solid fa-plug"></i> <span id="lblSerialStatus" class="hidden sm:inline">CONECTAR ARDUINO</span>
-        </button>
-
-        <button id="btnOpenCodeModal" class="px-2.5 py-1.5 bg-purple-900/80 hover:bg-purple-800 border border-purple-500/50 text-purple-200 font-pixel text-[9px] rounded-lg flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-code"></i> <span class="hidden sm:inline">Código C++</span>
-        </button>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- ========================================================================= -->
-  <!-- MAIN WORKSPACE LAYOUT                                                     -->
-  <!-- ========================================================================= -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
-
-    <!-- ======================================================================= -->
-    <!-- LEFT COLUMN: CREEPER CANVAS, MACROS & 200 SOUND LIBRARY (LG: 7 COLS)    -->
-    <!-- ======================================================================= -->
-    <section class="lg:col-span-7 flex flex-col gap-3">
-
-      <!-- PANTALLA Y CANVA PIXEL ART CREEPER -->
-      <div id="screenViewport" class="relative bg-black rounded-2xl border-2 border-retroBorder p-2.5 shadow-2xl flex flex-col items-center justify-center crt-overlay overflow-hidden">
-        
-        <!-- BARRA DE ESTADO -->
-        <div class="w-full flex justify-between items-center px-1 py-0.5 mb-1.5 font-pixel text-[9px] text-slate-400 border-b border-retroBorder/50">
-          <span class="text-phonkGold flex items-center gap-1.5 truncate">
-            <span class="w-2 h-2 rounded-full bg-phonkGold inline-block animate-ping"></span>
-            <span id="lblCurrentMode">MINECRAFT CREEPER CYBER DJ STUDIO</span>
-          </span>
-          <span class="text-neonCyan ml-2">FPS: <span id="lblFps">60</span></span>
-        </div>
-
-        <!-- HTML5 CANVAS MATRIX (64x64) -->
-        <div class="relative w-full aspect-square max-w-[360px] sm:max-w-[400px] flex items-center justify-center bg-retroBg rounded-xl overflow-hidden border border-retroBorder shadow-2xl">
-          <canvas id="pixelCanvas" width="64" height="64" class="w-full h-full pixelated cursor-pointer select-none"></canvas>
-
-          <div class="absolute bottom-2 left-2 right-2 bg-black/85 backdrop-blur border border-phonkGold/30 rounded-lg p-1.5 text-center text-xs font-crt text-slate-300 pointer-events-none">
-            <i class="fa-solid fa-hand-pointer text-phonkGold mr-1 animate-bounce"></i> Toca la pantalla para TNT, Chispas y Drops
-          </div>
-        </div>
-
-        <!-- CONTROLES SUPERPUESTOS -->
-        <div class="w-full mt-2 flex justify-between items-center px-1">
-          <div class="flex items-center gap-3">
-            <label class="flex items-center gap-1.5 cursor-pointer text-[10px] font-pixel text-slate-300">
-              <input id="chkCrt" type="checkbox" checked class="accent-phonkGold rounded w-3.5 h-3.5" />
-              <span>CRT</span>
-            </label>
-            <label class="flex items-center gap-1.5 cursor-pointer text-[10px] font-pixel text-slate-300">
-              <input id="chkGrid" type="checkbox" checked class="accent-phonkPurple rounded w-3.5 h-3.5" />
-              <span>Grid</span>
-            </label>
-          </div>
-          <div id="lblFuseState" class="font-pixel text-[9px] text-red-400 hidden animate-pulse">
-            <i class="fa-solid fa-triangle-exclamation"></i> SSSSssss...
-          </div>
-        </div>
-
-      </div>
-
-      <!-- BARRA DE MACROS DE TRANSICIÓN DJ -->
-      <div class="bg-retroPanel border border-retroBorder rounded-2xl p-2.5 shadow-xl flex flex-col gap-2">
-        <h2 class="font-pixel text-[9px] text-phonkGold flex items-center gap-1.5 border-b border-retroBorder/60 pb-1">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> TRANSICIONES DJ EN VIVO
-        </h2>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <button id="macroIntro" class="min-h-[48px] px-2 py-2 bg-gradient-to-r from-cyan-950 to-retroCard border border-cyan-500/60 hover:border-cyan-400 rounded-xl font-pixel text-[8px] text-cyan-300 active:scale-95 flex flex-col items-center justify-center gap-1 shadow">
-            <i class="fa-solid fa-chart-line text-xs"></i>
-            <span>INTRO BUILDER</span>
-          </button>
-          
-          <button id="macroDrop" class="min-h-[48px] px-2 py-2 bg-gradient-to-r from-purple-950 via-purple-900 to-retroCard border border-phonkPurple hover:border-phonkGold rounded-xl font-pixel text-[8px] text-phonkGold active:scale-95 flex flex-col items-center justify-center gap-1 shadow glow-gold">
-            <i class="fa-solid fa-fire text-xs"></i>
-            <span>THE DROP!</span>
-          </button>
-          
-          <button id="macroBreakdown" class="min-h-[48px] px-2 py-2 bg-gradient-to-r from-indigo-950 to-retroCard border border-indigo-500/60 hover:border-indigo-400 rounded-xl font-pixel text-[8px] text-indigo-300 active:scale-95 flex flex-col items-center justify-center gap-1 shadow">
-            <i class="fa-solid fa-water text-xs"></i>
-            <span>BREAKDOWN</span>
-          </button>
-          
-          <button id="macroOutro" class="min-h-[48px] px-2 py-2 bg-gradient-to-r from-red-950 to-retroCard border border-red-500/60 hover:border-red-400 rounded-xl font-pixel text-[8px] text-red-300 active:scale-95 flex flex-col items-center justify-center gap-1 shadow">
-            <i class="fa-solid fa-power-off text-xs"></i>
-            <span>OUTRO FADE</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- LIBRERÍA DE 200+ SONIDOS CON BUSCADOR Y TABS -->
-      <div class="bg-retroPanel border border-retroBorder rounded-2xl p-3 flex flex-col gap-3 shadow-xl">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-retroBorder/80 pb-2">
-          <div>
-            <h2 class="font-pixel text-[10px] text-phonkGold flex items-center gap-1.5">
-              <i class="fa-solid fa-cubes text-phonkPurple"></i> LIBRERÍA DE 200 RITMOS CONTINUOS
-            </h2>
-            <p class="text-[10px] font-crt text-slate-400">Toca para ENCENDER/APAGAR cualquier loop ritmico</p>
-          </div>
-          
-          <!-- BUSCADOR -->
-          <div class="relative w-full sm:w-auto">
-            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-500 text-xs"></i>
-            <input id="txtSoundSearch" type="text" placeholder="Buscar ritmo..." class="w-full sm:w-48 bg-black/80 border border-retroBorder rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 font-crt focus:border-phonkGold focus:outline-none" />
-          </div>
-        </div>
-
-        <!-- TABS DE GÉNEROS -->
-        <div id="categoryTabs" class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
-          <!-- Generado dinámicamente -->
-        </div>
-
-        <!-- CONTENEDOR DE TARJETAS DE SONIDOS -->
-        <div id="soundGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-[380px] overflow-y-auto p-1 bg-black/40 rounded-xl border border-retroBorder/50">
-          <!-- Tarjetas cargadas aquí -->
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ======================================================================= -->
-    <!-- RIGHT COLUMN: 10 ONE-SHOT PADS & MONITOR ARDUINO (LG: 5 COLS)           -->
-    <!-- ======================================================================= -->
-    <section class="lg:col-span-5 flex flex-col gap-3">
-
-      <!-- 10 PADS ASIGNABLES -->
-      <div class="bg-retroPanel border border-retroBorder rounded-2xl p-3 flex flex-col gap-2.5 shadow-2xl">
-        <div class="flex items-center justify-between border-b border-retroBorder/80 pb-1.5">
-          <h2 class="font-pixel text-[10px] text-phonkGold flex items-center gap-1.5">
-            <i class="fa-solid fa-bolt"></i> 10 QUICK PADS (TECLAS 1-0)
-          </h2>
-          <span class="text-[9px] font-cyber text-slate-400">TÁCTIL AMPLIO</span>
-        </div>
-
-        <div id="padsGrid" class="grid grid-cols-2 gap-2">
-          <!-- Pads 1-0 dinámicos -->
-        </div>
-      </div>
-
-      <!-- MONITOR ARDUINO SERIAL -->
-      <div class="bg-retroPanel border border-retroBorder rounded-xl p-3 flex flex-col gap-2.5 shadow-xl">
-        <div class="flex items-center justify-between border-b border-retroBorder/80 pb-1.5">
-          <h2 class="font-pixel text-[10px] text-creeperGreen flex items-center gap-1.5">
-            <i class="fa-solid fa-microchip"></i> MONITOR ARDUINO (10 LEDS + PIN 8)
-          </h2>
-          <span class="text-xs font-crt text-slate-400">SERIAL 9600 BAUD</span>
-        </div>
-
-        <div class="grid grid-cols-5 gap-1.5 py-1 bg-black/60 p-2 rounded-lg border border-retroBorder/50">
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-0" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">1</div>
-            <span class="font-pixel text-[6.5px] text-emerald-400">GRN1</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P12</span>
-          </div>
-
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-1" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">2</div>
-            <span class="font-pixel text-[6.5px] text-emerald-400">GRN2</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P2</span>
-          </div>
-
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-2" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">3</div>
-            <span class="font-pixel text-[6.5px] text-slate-200">WHT1</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P3</span>
-          </div>
-
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-3" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">4</div>
-            <span class="font-pixel text-[6.5px] text-slate-200">WHT2</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P4</span>
-          </div>
-
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-4" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">5</div>
-            <span class="font-pixel text-[6.5px] text-cyan-400">BLU1</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P5</span>
-          </div>
-
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-5" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">6</div>
-            <span class="font-pixel text-[6.5px] text-cyan-400">BLU2</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P6</span>
-          </div>
-
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-6" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">7</div>
-            <span class="font-pixel text-[6.5px] text-red-400">RED</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P7</span>
-          </div>
-
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-7" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">8</div>
-            <span class="font-pixel text-[6.5px] text-phonkGold">YEL1</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P9</span>
-          </div>
-
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-8" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">9</div>
-            <span class="font-pixel text-[6.5px] text-phonkGold">YEL2</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P10</span>
-          </div>
-
-          <div class="flex flex-col items-center gap-0.5">
-            <div id="vled-9" class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono">10</div>
-            <span class="font-pixel text-[6.5px] text-phonkPurple">AUX</span>
-            <span class="text-[7.5px] font-mono text-slate-500">P11</span>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between bg-black/60 p-2 rounded-lg border border-retroBorder/50">
-          <div class="flex items-center gap-2.5">
-            <div id="buzzerVisual" class="w-7 h-7 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 text-xs">
-              <i class="fa-solid fa-bullhorn"></i>
-            </div>
-            <div>
-              <div class="font-pixel text-[9px] text-phonkGold" id="lblToneFreq">0 Hz</div>
-              <div class="text-[9px] text-slate-400 font-crt" id="lblNoteName">BUZZER PASIVO: LISTO</div>
-            </div>
-          </div>
-          <span class="text-[8.5px] font-mono bg-retroBorder px-1.5 py-0.5 rounded text-slate-300">PIN 8 (TONE)</span>
-        </div>
-      </div>
-
-      <!-- CONSOLA DE LOGS SERIAL -->
-      <div class="bg-retroPanel border border-retroBorder rounded-xl p-2.5 flex flex-col gap-1.5 shadow-xl">
-        <div class="flex items-center justify-between border-b border-retroBorder/80 pb-1">
-          <h2 class="font-pixel text-[9px] text-neonCyan flex items-center gap-1.5">
-            <i class="fa-solid fa-terminal"></i> CONSOLA SERIAL
-          </h2>
-          <button id="btnClearLog" class="text-[8px] font-pixel text-slate-400 hover:text-white">LIMPIAR</button>
-        </div>
-
-        <div id="txtSerialLog" class="bg-black/90 text-creeperGreen font-crt text-xs p-2 rounded-lg h-20 overflow-y-auto border border-retroBorder/60 flex flex-col gap-0.5">
-          <div class="text-slate-500">[Sistema] Listo. Conecta tu Arduino para sincronizar LEDs y Buzzer.</div>
-        </div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- ========================================================================= -->
-  <!-- MODAL: CÓDIGO C++ PARA ARDUINO                                            -->
-  <!-- ========================================================================= -->
-  <div id="modalFirmware" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3">
-    <div class="bg-retroPanel border-2 border-phonkGold/80 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-      
-      <div class="p-3 border-b border-retroBorder flex items-center justify-between bg-black/50">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-code text-phonkGold"></i>
-          <h3 class="font-pixel text-xs text-phonkGold">CÓDIGO ARDUINO C++ OPTIMIZADO (10 LEDS + BUZZER)</h3>
-        </div>
-        <button id="btnCloseCodeModal" class="text-slate-400 hover:text-white text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-
-      <div class="p-3 overflow-y-auto flex-1 font-mono text-xs bg-slate-950 text-emerald-400 select-all">
-        <pre><code id="codeBlock">// =========================================================================
-// FIRMWARE CYBERPUNK DJ STUDIO ULTRA (VS Code + PlatformIO / Arduino IDE)
-// Placa: Arduino Uno
-// Hardware: 10 LEDs (Pines 12, 2, 3, 4, 5, 6, 7, 9, 10, 11) + Buzzer Pasivo (Pin 8)
-// =========================================================================
-
-#include &lt;Arduino.h&gt;
-
-const int LEDS[10] = {12, 2, 3, 4, 5, 6, 7, 9, 10, 11};
-const int TOTAL_LEDS = 10;
-const int BUZZER_PIN = 8;
-
-#define NOTE_C4  262
-#define NOTE_E4  330
-#define NOTE_G4  392
-#define NOTE_C5  523
-#define NOTE_E5  659
-#define NOTE_G5  784
-#define NOTE_C6  1047
-
-void apagarTodos() {
-  for (int i = 0; i &lt; TOTAL_LEDS; i++) digitalWrite(LEDS[i], LOW);
-}
-
-void encenderTodos() {
-  for (int i = 0; i &lt; TOTAL_LEDS; i++) digitalWrite(LEDS[i], HIGH);
-}
-
-void sonarNota(int freq, int duracionMs) {
-  if (freq &gt; 0) {
-    tone(BUZZER_PIN, freq, duracionMs);
-    delay(duracionMs);
-    noTone(BUZZER_PIN);
-  } else {
-    noTone(BUZZER_PIN);
-    delay(duracionMs);
-  }
-}
-
-void pad1Cowbell() {
-  apagarTodos();
-  digitalWrite(LEDS[7], HIGH); digitalWrite(LEDS[8], HIGH);
-  tone(BUZZER_PIN, 587, 60); delay(65);
-  tone(BUZZER_PIN, 845, 80); delay(85);
-  noTone(BUZZER_PIN); apagarTodos();
-}
-
-void pad2SubDrop() {
-  apagarTodos();
-  digitalWrite(LEDS[0], HIGH); digitalWrite(LEDS[1], HIGH);
-  for (int f = 220; f &gt;= 30; f -= 20) { tone(BUZZER_PIN, f, 25); delay(25); }
-  noTone(BUZZER_PIN); apagarTodos();
-}
-
-void pad3Explosion() {
-  encenderTodos();
-  for (int f = 900; f &gt;= 80; f -= 100) { tone(BUZZER_PIN, f, 20); delay(20); }
-  noTone(BUZZER_PIN); apagarTodos();
-}
-
-void pad4VocalChop() {
-  apagarTodos();
-  digitalWrite(LEDS[4], HIGH); digitalWrite(LEDS[5], HIGH);
-  tone(BUZZER_PIN, 440, 40); delay(45);
-  tone(BUZZER_PIN, 330, 70); delay(75);
-  noTone(BUZZER_PIN); apagarTodos();
-}
-
-void pad5SlapBass() {
-  apagarTodos();
-  digitalWrite(LEDS[2], HIGH); digitalWrite(LEDS[3], HIGH);
-  sonarNota(NOTE_E4, 80); apagarTodos();
-}
-
-void pad6Fuse() {
-  for (int i = 0; i &lt; 6; i++) {
-    apagarTodos();
-    digitalWrite(LEDS[i % TOTAL_LEDS], HIGH);
-    digitalWrite(LEDS[(i + 5) % TOTAL_LEDS], HIGH);
-    tone(BUZZER_PIN, random(1200, 2500), 25); delay(30);
-  }
-  noTone(BUZZER_PIN); apagarTodos();
-}
-
-void pad7Scratch() {
-  for (int i = 0; i &lt; 3; i++) {
-    apagarTodos();
-    digitalWrite(LEDS[i * 3], HIGH);
-    tone(BUZZER_PIN, 800 + i * 200, 20); delay(25);
-  }
-  noTone(BUZZER_PIN); apagarTodos();
-}
-
-void pad8Laser() {
-  for (int f = 1400; f &gt;= 350; f -= 150) {
-    apagarTodos();
-    digitalWrite(LEDS[map(f, 350, 1400, 0, TOTAL_LEDS - 1)], HIGH);
-    tone(BUZZER_PIN, f, 15); delay(18);
-  }
-  noTone(BUZZER_PIN); apagarTodos();
-}
-
-void pad9Glitch() {
-  for (int i = 0; i &lt; 5; i++) {
-    apagarTodos();
-    digitalWrite(LEDS[random(0, TOTAL_LEDS)], HIGH);
-    tone(BUZZER_PIN, random(400, 1800), 20); delay(25);
-  }
-  noTone(BUZZER_PIN); apagarTodos();
-}
-
-void pad0Fanfare() {
-  int notas[] = {NOTE_C5, NOTE_E5, NOTE_G5, NOTE_C6};
-  for (int i = 0; i &lt; 4; i++) {
-    apagarTodos();
-    for (int k = 0; k &lt;= i * 2 + 1 && k &lt; TOTAL_LEDS; k++) {
-      digitalWrite(LEDS[k], HIGH);
-    }
-    sonarNota(notas[i], 70);
-  }
-  apagarTodos();
-}
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PEPESONGS — Cyberpunk DJ Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#030508;--pn:#080d14;--cd:#0f1724;--bd:#1e3348;--gold:#ffd700;--pur:#a855f7;--grn:#00ff66;--cy:#00e5ff;--red:#ef4444}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none}
+body{margin:0;background:var(--bg);color:#e2e8f0;font:14px system-ui,sans-serif;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.px,button,h1,h2{font-family:'Press Start 2P',monospace}
+button{color:inherit;cursor:pointer;font-size:8px}
+header{position:sticky;top:0;z-index:20;background:var(--pn);border-bottom:2px solid var(--bd);padding:8px 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+h1{font-size:12px;color:var(--gold);margin:0}h1 small{color:var(--pur);font-size:7px;display:block;margin-top:5px}
+h2{font-size:9px;color:var(--gold);margin:0 0 8px}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:6px 10px}
+.ctl label{display:flex;flex-direction:column;gap:4px;font:7px 'Press Start 2P',monospace;color:#94a3b8}
+.ctl b{color:var(--cy);font-weight:400}
+input[type=range]{width:78px;height:24px;accent-color:var(--gold)}
+.b{min-height:48px;padding:8px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--cd)}
+.red{background:#dc2626;border-color:#f87171;font-weight:700}
+main{max-width:1200px;margin:0 auto;padding:10px;display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:1024px){main{grid-template-columns:7fr 5fr}}
+section>div,.box{background:var(--pn);border:1px solid var(--bd);border-radius:16px;padding:10px;margin-bottom:12px}
+#scr{display:flex;flex-direction:column;align-items:center;background:#000}
+.cvw{position:relative;width:100%;max-width:400px;aspect-ratio:1;border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+canvas{width:100%;height:100%;image-rendering:pixelated;display:block}
+.shk{animation:shk .4s}@keyframes shk{0%,100%{transform:none}15%{transform:translate(-7px,5px)}30%{transform:translate(6px,-6px)}45%{transform:translate(-5px,-4px)}60%{transform:translate(5px,4px)}80%{transform:translate(-2px,2px)}}
+#dd{font:8px/1.6 'Press Start 2P',monospace;color:var(--cy);margin:0 0 8px}
+.crt .cvw::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(rgba(0,0,0,0) 50%,rgba(0,0,0,.35) 50%);background-size:100% 4px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+#tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px}
+#tabs button{flex:none;min-height:44px;padding:0 10px}
+#tabs .on{background:var(--gold);color:#000}
+#q{width:100%;min-height:44px;margin-bottom:8px;background:#000;border:1px solid var(--bd);border-radius:12px;color:#e2e8f0;padding:0 12px;font-size:14px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;max-height:420px;overflow-y:auto;padding:4px;background:#0006;border-radius:12px}
+.card{min-height:56px;text-align:left;padding:8px;border-radius:12px;border:1px solid var(--bd);background:var(--cd);display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+.card i{font:normal 7px 'Press Start 2P',monospace;color:var(--pur)}
+.card.on{background:#064e3b;border-color:var(--grn);box-shadow:0 0 14px #00ff6666}.card.on i{color:var(--grn)}
+#pads{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pad{min-height:64px;text-align:left;padding:8px;border-radius:12px;border:2px solid var(--pur);background:linear-gradient(135deg,#3b0764,var(--cd))}
+.pad:active,.pad.hit{transform:scale(.93);border-color:var(--gold);box-shadow:0 0 24px var(--gold)}
+#leds{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;font:7px monospace;color:#94a3b8}
+#leds div div{width:24px;height:24px;margin:0 auto 3px;border-radius:50%;background:#1e293b;border:1px solid #475569;line-height:22px}
+#leds .on{background:var(--grn);color:#000;box-shadow:0 0 12px var(--grn)}
+#log{height:80px;overflow-y:auto;background:#000;color:var(--grn);font:12px monospace;padding:6px;border-radius:8px}
+#ov,#modal{position:fixed;inset:0;z-index:50;background:#000d;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center}
+#modal{display:none}
+#ov .bx{max-width:380px;background:var(--pn);border:2px solid var(--gold);border-radius:16px;padding:24px;box-shadow:0 0 30px #ffd70066}
+#modal .bx{max-width:760px;width:100%;max-height:90vh;display:flex;flex-direction:column;background:var(--pn);border:2px solid var(--gold);border-radius:16px;padding:12px;text-align:left}
+pre{margin:8px 0;overflow:auto;flex:1;background:#020617;color:#34d399;font:12px monospace;padding:10px;border-radius:8px;user-select:text}
+</style></head>
+<body>
+<div id="ov"><div class="bx"><h1 style="font-size:14px">PEPESONGS</h1><p class="px" style="font-size:9px;line-height:1.7;color:var(--gold)">TOCA PARA ACTIVAR EL ESTUDIO DJ</p><button class="b" style="background:var(--gold);color:#000;margin-top:8px">¡INICIAR!</button></div></div>
+
+<header>
+<h1>PEPESONGS<small>CYBERPUNK DJ · 6 DECKS · 100 BEATS</small></h1>
+<div class="ctl">
+<label><span>VOL <b id="lVol">80%</b></span><input id="rVol" type="range" min="0" max="100" value="80"></label>
+<label><span>BPM <b id="lBpm">140</b></span><input id="rBpm" type="range" min="60" max="220" value="140"></label>
+<label><span>FILTRO <b id="lF">NEUTRO</b></span><input id="rF" type="range" min="-100" max="100" value="0"></label>
+<label><span>SUB-DRIVE <b id="lD">30%</b></span><input id="rD" type="range" min="0" max="100" value="30"></label>
+<button id="stop" class="b red">APAGAR TODO</button>
+</div>
+<div style="display:flex;gap:6px"><button id="ser" class="b" style="background:#059669">CONECTAR ARDUINO</button><button id="code" class="b">C++</button></div>
+</header>
+
+<main>
+<section>
+<div id="scr" class="crt"><div class="px" style="font-size:8px;color:var(--gold);width:100%;margin-bottom:6px">CREEPER CYBER DJ · <span id="fx"></span></div>
+<div class="cvw"><canvas id="cv" width="64" height="64"></canvas></div>
+<label class="px" style="font-size:8px;margin-top:8px"><input id="crt" type="checkbox" checked> CRT</label></div>
+
+<div><h2>TRANSICIONES DJ</h2><div class="row">
+<button class="b" id="mI" style="color:var(--cy)">INTRO BUILDER</button>
+<button class="b" id="mD" style="color:var(--gold);border-color:var(--pur)">DROP!</button>
+<button class="b" id="mB" style="color:#a5b4fc">BREAKDOWN</button>
+<button class="b" id="mO" style="color:#fca5a5">OUTRO FADE</button></div></div>
+
+<div><h2>LIBRERÍA · 6 DECKS · 100 BEATS ÚNICOS</h2>
+<input id="q" placeholder="Buscar ritmo...">
+<div id="tabs"></div><p id="dd"></p><div id="grid"></div></div>
+</section>
+
+<section>
+<div><h2>10 QUICK PADS (TECLAS 1-0)</h2><div id="pads"></div></div>
+<div><h2 style="color:var(--grn)">MONITOR ARDUINO · 9600 BAUD</h2><div id="leds"></div>
+<p class="px" style="font-size:9px;color:var(--gold)"><span id="hz">0 Hz</span> <span style="color:#94a3b8;font-size:7px">BUZZER PIN 8</span></p></div>
+<div><h2 style="color:var(--cy)">CONSOLA SERIAL</h2><div id="log">[Sistema] Listo. Conecta tu Arduino (Chrome/Edge).</div></div>
+</section>
+</main>
+
+<div id="modal"><div class="bx"><h2>FIRMWARE ARDUINO UNO · PLATFORMIO / VS CODE</h2><pre id="fw"></pre>
+<div style="display:flex;gap:8px;justify-content:flex-end"><button class="b" id="cp" style="background:var(--gold);color:#000">COPIAR</button><button class="b" id="cl">CERRAR</button></div></div></div>
+
+<script>
+const $=i=>document.getElementById(i);
+/* ---------- CATÁLOGO: 10 géneros x 10 beats, cada uno con semilla propia ---------- */
+const DECKS=[
+{n:'INTROS & SOUNDSCAPES',tag:'INTROS',desc:'Pads y texturas suaves para abrir la mezcla',bw:'triangle',lw:'sine',sc:[0,2,3,5,7,9,10,12],
+ t:['Neon Dawn','Cyber Fog','Glass Pad','Rain Grid','Void Bloom','Ghost Drone','Aurora Net','Dream Circuit','Soft Static','Night Skyline','Hologram Air','Ether Wash','Pulse Mist','Orbit Calm','Lunar Haze','Silent Boot']},
+{n:'GRAVES & SUB-BASSES',tag:'SUBS',desc:'Seno saturado 30-60 Hz, sostenido y pesado',bw:'sine',lw:'sine',sc:[0,0,2,3,5,7],
+ t:['Sub 30Hz Abyss','Sub 33 Deep','Sub 36 Rumble','Sub 38 Pressure','Sub 41 Dark','Sub 44 Slide','Sub 46 Heavy','Sub 49 Wall','Sub 51 Drift','Sub 54 Throb','Sub 56 Thick','Sub 58 Punch','Sub 60 Core','808 Long Sub','Drive Sine Sub','Tectonic Sub']},
+{n:'BAJOS ELÉCTRICOS & SYNTHS',tag:'BASS/SYNTH',desc:'Slap funk, Acid 303 y Reese con movimiento rítmico',bw:'sawtooth',lw:'sawtooth',sc:[0,3,5,7,10,12,15,17],
+ t:['Slap Funk','Slap Pop','Slap Disco','Slap Groove','Slap Thump','Acid 303 Roll','Acid Squelch','Acid Rave','Acid Chaos','Acid Rubber','Reese Dark','Reese Neuro','Reese Wide','Reese Growl','Reese DnB','Synth Pluck Bass','Cyber Wobble']},
+{n:'BEATS & GROOVES',tag:'BEATS',desc:'Cajas, claps, percusión y ritmos principales',bw:'sine',lw:'square',sc:[0,1,3,5,7,8,10,12],
+ t:['Phonk Drift Groove','Memphis Bounce','Trap Roll','Drill Slide','Dembow Perreo','Funk Montagem','House 4x4','Techno Pulse','Electro Clap','Breakbeat Cut','Boom Bap Dark','Latin Percus','Industrial Beat','Half-Time Grind','Jersey Club','Garage Skip','Cowbell Rhythm']},
+{n:'DROP & BOOM',tag:'DROP',desc:'Kicks pesados, sub-drops y explosiones TNT',bw:'sine',lw:'sawtooth',sc:[0,1,3,5,6,7,10],
+ t:['TNT Blast','TNT Mega','Creeper Boom','Creeper Fuse Drop','Sub Drop Massive','Sub Drop 808','Impact Hit','Impact Cinema','Heavy Kick Drop','Kick Wall','Mega Drop','Nuke Boom','Bass Cannon','Shock Wave','Crater Slam','Detonator','Final Boom']},
+{n:'OUTROS & TRANSICIONES',tag:'OUTROS',desc:'Risers, caídas y texturas de cierre',bw:'sawtooth',lw:'triangle',sc:[0,2,3,5,7,8,10,12],
+ t:['White Noise Riser','Riser Siren','Snare Roll Build','Tension Sweep','Uplifter 8 Bars','Rise & Fall','Reverse Crash','Cyber Riser','Alarm Build','Outro Fade Pad','Tape Stop Out','Downlifter','Glitch Out','Filter Close Out','Last Call','Static Exit','Power Down']}];
+
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gen(id,dk,j){
+ const D_=DECKS[dk],r=rng(Math.imul(id,2654435761)^0x9E3779B9),R=n=>Math.floor(r()*n),sc=D_.sc,z=()=>Array(16).fill(0),nl=()=>Array(16).fill(null);
+ const mut=(b,a,dr)=>{const x=z();b.forEach(i=>x[i]=1);for(let i=0;i<16;i++){if(x[i]){if(i&&r()<dr)x[i]=0}else if(r()<a)x[i]=1}return x};
+ const pick=n=>sc[R(Math.min(sc.length,n))];
+ const p={dk,kick:z(),snare:z(),clap:z(),perc:z(),hat:z(),open:z(),bass:nl(),lead:nl(),imp:z(),v:0,root:36+R(7),kf:R(40),sf:1200+R(2800),sw:0,len:.5+r()*.9,cut:400+R(1600),pad:[0,sc[2],sc[4]]};
+ const hat=d=>{for(let i=0;i<16;i++){p.hat[i]=((i%2==0&&r()<d+.3)||r()<d-.3)?1:0;p.open[i]=(i%4==2&&r()<.4)?1:0}};
+ switch(dk){
+ case 0:p.root=45+R(10);p.len=6+r()*2;p.pad=[0,sc[1+R(3)],sc[3+R(3)]];p.bass[0]=0;p.bass[8]=r()<.7?pick(4):null;
+  for(let i=1;i<16;i+=2)if(r()<.25)p.lead[i]=sc[R(sc.length)]+(r()<.3?12:0);
+  if(r()<.5)p.kick[0]=1;for(let i=2;i<16;i+=4)if(r()<.5)p.hat[i]=1;break;
+ case 1:p.root=23+R(6);p.len=2.5+r()*1.5;[0,4,8,12].forEach(i=>{if(!i||r()<.7)p.bass[i]=[0,0,2,3,5,7][R(6)]});p.kick=mut([0,8],.05,.3);hat(.3);break;
+ case 2:p.v=j<5?0:j<10?1:2;p.len=p.v==2?2+r()*1.5:.5+r()*.9;p.root=31+R(10);p.sw=.1*r();p.kick=mut([0,4,8,12],.08,.15);p.snare=mut([4,12],.05,.1);hat(.6);
+  for(let i=0;i<16;i++){if(p.v==2?(i%4==0||(i%4==2&&r()<.4)):(i%2==0||r()<.4))p.bass[i]=pick(6);if(r()<.2)p.lead[i]=sc[R(sc.length)]}break;
+ case 3:p.sw=.05+.15*r();p.kick=mut([[0,3,8,11],[0,4,8,12],[0,7,10]][R(3)],.1,.15);p.snare=mut([[4,12],[8],[3,6,11,14]][R(3)],.06,.1);p.clap=mut([4,12],.04,.2);
+  for(let k=0;k<5;k++)p.perc[R(16)]=1;hat(.4+r()*.5);p.bass[0]=0;if(r()<.6)p.bass[10]=pick(4);break;
+ case 4:p.v=j<4?1:j<8?0:2;p.kick=mut([[0,4,8,12],[0,6,10],[0,3,8,11]][R(3)],.06,.1);p.snare=mut([12],.05,.2);
+  p.imp[0]=1;p.imp[8]=r()<.6?1:0;p.imp[14]=r()<.3?1:0;hat(.3);p.root=24+R(10);p.bass[0]=0;p.bass[8]=pick(3);p.len=2+r()*1.5;break;
+ case 5:p.v=j%3;p.root=40+R(12);for(let i=8;i<16;i++)if(r()<.3+(i-8)*.08)p.snare[i]=1;if(r()<.5)p.kick[0]=1}
+ return p}
+const SND=[];let gid=0;DECKS.forEach((D_,dk)=>D_.t.forEach((n,j)=>{gid++;SND.push({id:gid,dk,name:gid+'. '+n,p:gen(gid,dk,j)})}));
+
+/* ---------- AUDIO: buses sub / mid / hi -> drive(sub) -> filtro dual -> compresor -> master ---------- */
+let A,bus={},drive,lp,hp,master,nz,vol=.8,bpm=140;
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+function flt(f,d){const n=A.createBiquadFilter();n.type='lowpass';n.frequency.value=f;n.connect(d);return n}
+function init(){
+ if(A){if(A.state!=='running')A.resume();return}
+ A=new(window.AudioContext||window.webkitAudioContext)();
+ const mk=(t,f)=>{const n=A.createBiquadFilter();n.type=t;n.frequency.value=f;return n};
+ bus.sub=mk('lowpass',160);bus.mid=mk('highpass',110);bus.hi=mk('highpass',5000);
+ drive=A.createWaveShaper();drive.oversample='4x';setDrive(+$('rD').value);
+ const mix=A.createGain();mix.gain.value=.6;lp=mk('lowpass',20000);hp=mk('highpass',10);
+ const cp=A.createDynamicsCompressor();cp.threshold.value=-16;cp.knee.value=20;cp.ratio.value=6;cp.attack.value=.004;cp.release.value=.15;
+ master=A.createGain();master.gain.value=vol;
+ bus.sub.connect(drive);drive.connect(mix);bus.mid.connect(mix);bus.hi.connect(mix);
+ mix.connect(lp);lp.connect(hp);hp.connect(cp);cp.connect(master);master.connect(A.destination);
+ nz=A.createBuffer(1,A.sampleRate,A.sampleRate);const d=nz.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+ A.resume()}
+function setDrive(v){if(!drive)return;const k=.6+v/100*7,c=new Float32Array(2048),n=Math.tanh(k);
+ for(let i=0;i<2048;i++)c[i]=Math.tanh(k*(i/1023.5-1))/n;drive.curve=c}
+function setFilter(v){$('rF').value=v;if(!A){return}
+ const t=A.currentTime;let l='NEUTRO';
+ if(v<0){const f=200*Math.pow(100,(100+v)/100);lp.frequency.setTargetAtTime(f,t,.05);hp.frequency.setTargetAtTime(10,t,.05);l='LP '+Math.round(f)}
+ else if(v>0){const f=10*Math.pow(600,v/100);hp.frequency.setTargetAtTime(f,t,.05);lp.frequency.setTargetAtTime(20000,t,.05);l='HP '+Math.round(f)}
+ else{lp.frequency.setTargetAtTime(20000,t,.05);hp.frequency.setTargetAtTime(10,t,.05)}
+ $('lF').textContent=l}
+function osc(type,f,f2,t,d,v,dest,a=.004){const o=A.createOscillator(),g=A.createGain();o.type=type;o.frequency.setValueAtTime(f,t);
+ if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+ g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+ o.connect(g);g.connect(dest);o.start(t);o.stop(t+d+.03)}
+function nse(t,d,v,type,f,dest){const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain();
+ s.buffer=nz;fl.type=type;fl.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+ s.connect(fl);fl.connect(g);g.connect(dest);s.start(t,Math.random()*.5);s.stop(t+d+.03)}
+
+/* ---------- SECUENCIADOR GLOBAL: fase común, entradas cuantizadas al compás ---------- */
+const loops=new Map();let tick=0,nextT=0,timer=null,lead=0;
+function vis(T,fn){setTimeout(fn,Math.max(0,(T-A.currentTime)*1000))}
+function step(s,t,i,isLead){
+ const p=s.p,d=60/bpm/4,T=t+(i%2?p.sw*d:0),dk=p.dk,D_=DECKS[dk],big=dk==4;let m=0,f=0;
+ if(p.kick[i]){osc('sine',(big?200:150)+p.kf,big?30:42,T,big?.4:.22,big?1:.9,bus.sub);osc('triangle',900,120,T,.02,.25,bus.mid);m|=3;vis(T,()=>bump(big?1:.6))}
+ if(p.snare[i]){nse(T,dk==3?.18:.14,.5,'bandpass',p.sf,bus.mid);osc('triangle',220,140,T,.08,.3,bus.mid);nse(T,.1,.15,'highpass',4000,bus.hi);m|=12}
+ if(p.clap[i]){for(let k=0;k<3;k++)nse(T+k*.012,.05+k*.03,.3,'bandpass',1500,bus.mid);m|=12}
+ if(p.perc[i]){osc('sine',180+p.kf*6,90,T,.09,.35,bus.mid);osc('triangle',700+p.kf*10,0,T,.03,.1,bus.hi);m|=16}
+ if(p.hat[i]){const o=p.open[i];nse(T,o?.18:.04,o?.16:.12,'highpass',7500,bus.hi);m|=48}
+ const b=p.bass[i],l=p.lead[i];
+ if(b!=null){const fr=mtof(p.root+b),L=d*p.len;m|=192;f=Math.min(5000,fr*(fr<80?8:fr<160?4:2));
+  if(dk==0){const a=Math.min(.35,L*.4);p.pad.forEach(iv=>osc(D_.bw,mtof(p.root+b+iv),0,T,L,.07,flt(1400,bus.mid),a))}
+  else if(dk==1||dk==4){osc('sine',fr,fr*.9,T,L,.85,bus.sub);osc('triangle',fr*2,0,T,L,.08,flt(300,bus.mid))}
+  else if(dk==2){
+   if(p.v==0){osc('sine',fr,0,T,d*.6,.5,bus.sub);osc('square',fr*2,fr,T,d*.5,.3,flt(2200,bus.mid))}
+   else if(p.v==1){const F=A.createBiquadFilter();F.Q.value=14;F.frequency.setValueAtTime(p.cut*3,T);F.frequency.exponentialRampToValueAtTime(120,T+d*.9);F.connect(bus.mid);osc('sine',fr,0,T,L,.35,bus.sub);osc('sawtooth',fr*2,0,T,d*.9,.2,F)}
+   else{osc('sine',fr,0,T,L,.5,bus.sub);osc('sawtooth',fr*2.012,0,T,L,.14,flt(900,bus.mid));osc('sawtooth',fr*1.988,0,T,L,.14,flt(900,bus.mid))}}
+  else osc('sine',fr,0,T,d*1.5,.6,bus.sub)}
+ if(p.imp[i]){if(p.v==0)osc('sine',110,28,T,.9,1,bus.sub);
+  else if(p.v==1){nse(T,1.1,.8,'lowpass',700,bus.sub);nse(T,.6,.4,'highpass',2500,bus.hi);osc('sine',90,28,T,.7,.9,bus.sub)}
+  else{osc('sawtooth',300,40,T,.4,.35,flt(800,bus.mid));osc('sine',100,30,T,.5,1,bus.sub)}
+  m=1023;vis(T,()=>{boom();flash(p.v==1?'#f00':'#fff')})}
+ if(dk==5){const g=i/15,fr=mtof(p.root)*Math.pow(2,i/5);nse(T,d*1.2,.04+.25*g,'bandpass',500+g*g*9000,bus.hi);
+  if(p.v!=1)osc('sawtooth',fr,0,T,d,.05+.08*g,flt(1500+i*350,bus.mid));
+  if(p.v==2)osc('sine',900*(1-g)+100,0,T,d,.08,bus.mid);
+  if(!i)nse(T,1.2,.3,'highpass',5000,bus.hi);m=(1<<(1+Math.floor(g*9)))-1;f=Math.min(5000,fr)}
+ if(l!=null){const fr=mtof(p.root+24+l),pd=dk==0;osc(pd?'sine':D_.lw,fr,0,T,pd?d*6:d*.9,pd?.08:.1,flt(pd?2500:3000,bus.mid),pd?.02:.004);m|=768;f=Math.min(5000,fr)}
+ if(isLead)vis(T,()=>hw(m,Math.round(f)))}
+function sched(){while(nextT<A.currentTime+.12){loops.forEach((o,id)=>{if(tick>=o.st)step(o.s,nextT,tick%16,id===lead)});nextT+=60/bpm/4;tick++}}
+function startLoop(id){init();const st=timer?Math.ceil(tick/16)*16:0;if(!timer){tick=0;nextT=A.currentTime+.06;timer=setInterval(sched,25)}
+ loops.set(id,{s:SND[id-1],st});lead=id;card(id,1)}
+function stopLoop(id){loops.delete(id);card(id,0);if(lead===id)lead=[...loops.keys()].pop()||0;
+ if(!loops.size){clearInterval(timer);timer=null;hw(0,0)}}
+function stopAll(){[...loops.keys()].forEach(stopLoop);hw(0,0)}
+function toggle(id){loops.has(id)?stopLoop(id):startLoop(id)}
+
+/* ---------- PADS (one-shots) ---------- */
+const PADS=['Cowbell','Sub Drop','Explosión','Vocal Chop','Slap Bass','Fuse','Scratch','Laser','Glitch','Fanfarria'],PF=[587,220,120,440,82,1500,900,800,700,1047];
+function fx(i){init();const t=A.currentTime+.01,M=bus.mid;
+ switch(i){
+ case 0:osc('square',587,0,t,.12,.25,M);osc('square',845,0,t,.12,.25,M);break;
+ case 1:osc('sine',220,28,t,.7,.95,bus.sub);break;
+ case 2:osc('sine',120,30,t,.6,.9,bus.sub);nse(t,.9,.7,'lowpass',500,bus.sub);nse(t,.5,.4,'highpass',2000,bus.hi);flash('#f00');boom();break;
+ case 3:osc('sawtooth',440,330,t,.14,.2,flt(1200,M));osc('sawtooth',330,440,t+.15,.14,.2,flt(1200,M));break;
+ case 4:osc('sine',82,0,t,.25,.7,bus.sub);osc('sawtooth',164,82,t,.12,.25,flt(900,M));break;
+ case 5:for(let k=0;k<8;k++)osc('square',1200+k*180,0,t+k*.03,.03,.12,bus.hi);flash('#fff');break;
+ case 6:osc('sawtooth',900,200,t,.12,.2,flt(3000,M));osc('sawtooth',200,1200,t+.12,.12,.2,flt(3000,M));break;
+ case 7:osc('sawtooth',1600,150,t,.25,.2,M);break;
+ case 8:for(let k=0;k<6;k++)osc('square',300+Math.random()*1500,0,t+k*.04,.03,.15,M);break;
+ case 9:[523,659,784,1047].forEach((f,k)=>osc('square',f,0,t+k*.07,.12,.18,M))}
+ bump(.9);spark(32,32,26);hw(1<<i,PF[i]);setTimeout(()=>hw(0,0),160)}
+
+/* ---------- UI ---------- */
+let cat=0;
+function tabs(){const t=$('tabs');t.innerHTML='';DECKS.forEach((c,i)=>{const b=document.createElement('button');b.className='b'+(cat===i?' on':'');b.textContent='DECK '+(i+1)+' · '+c.tag;b.onclick=()=>{cat=i;tabs();grid()};t.appendChild(b)})}
+function grid(){const g=$('grid'),q=$('q').value.toLowerCase(),D_=DECKS[cat];$('dd').textContent=q?'BÚSQUEDA EN LOS 6 DECKS':'DECK '+(cat+1)+' · '+D_.n+' — '+D_.desc;g.innerHTML='';
+ SND.filter(s=>q?(s.name+DECKS[s.dk].n).toLowerCase().includes(q):s.dk===cat).forEach(s=>{
+  const b=document.createElement('button');b.className='card'+(loops.has(s.id)?' on':'');b.dataset.id=s.id;
+  b.innerHTML=`<span style="font-size:7px;line-height:1.5">${s.name}</span><i>${loops.has(s.id)?'REPRODUCIENDO':'PLAY'}</i>`;
+  b.onclick=()=>toggle(s.id);g.appendChild(b)})}
+function card(id,on){const c=document.querySelector(`.card[data-id="${id}"]`);if(!c)return;c.classList.toggle('on',!!on);c.querySelector('i').textContent=on?'REPRODUCIENDO':'PLAY'}
+function pads(){const p=$('pads');PADS.forEach((n,i)=>{const b=document.createElement('button');b.className='pad';b.dataset.i=i;
+ b.innerHTML=`<span style="color:var(--gold);font-size:8px">${(i+1)%10}</span><br><span style="font-size:7px;color:#cbd5e1;line-height:2">${n}</span>`;
+ b.onpointerdown=e=>{e.preventDefault();hit(i)};p.appendChild(b)})}
+function hit(i){fx(i);const b=document.querySelector(`.pad[data-i="${i}"]`);b.classList.add('hit');setTimeout(()=>b.classList.remove('hit'),140)}
+const LN=['KICK','KICK','SNR','SNR','HAT','HAT','BAS','BAS','LEAD','LEAD'],LP_=[12,2,3,4,5,6,7,9,10,11];
+function mkLeds(){const l=$('leds');for(let i=0;i<10;i++)l.insertAdjacentHTML('beforeend',`<div><div id="v${i}">${i+1}</div>${LN[i]}<br>P${LP_[i]}</div>`)}
+let mask=0;
+function hw(m,f){mask=m;for(let i=0;i<10;i++)$('v'+i).classList.toggle('on',!!(m>>i&1));$('hz').textContent=f+' Hz';send(m,f)}
+
+/* ---------- MACROS ---------- */
+function sweep(from,to,ms){let v=from;const n=40,st=(to-from)/n;setFilter(v);const iv=setInterval(()=>{v+=st;if((st>0&&v>=to)||(st<0&&v<=to)){v=to;clearInterval(iv)}setFilter(Math.round(v))},ms/n)}
+$('mI').onclick=()=>{init();stopAll();startLoop(1);sweep(80,0,60000/bpm*8)};
+$('mD').onclick=()=>{init();fx(2);startLoop(67);startLoop(25);startLoop(50);setFilter(0)};
+$('mB').onclick=()=>{init();stopAll();startLoop(5);sweep(0,-70,600)};
+$('mO').onclick=()=>{init();startLoop(93);const t=A.currentTime;master.gain.cancelScheduledValues(t);master.gain.setValueAtTime(master.gain.value,t);master.gain.linearRampToValueAtTime(.0001,t+5);
+ setTimeout(()=>{stopAll();master.gain.cancelScheduledValues(A.currentTime);master.gain.setValueAtTime(vol,A.currentTime)},5100)};
+
+/* ---------- WEB SERIAL (9600): protocolo "mascara,frecuencia\n" ---------- */
+let port,wr;const enc=new TextEncoder();
+function log(m){const l=$('log');l.insertAdjacentHTML('beforeend','<div></div>');l.lastChild.textContent=m;l.scrollTop=l.scrollHeight}
+function send(m,f){if(!wr)return;wr.write(enc.encode(m+','+f+'\n')).catch(e=>log('[Error] '+e.message))}
+$('ser').onclick=async()=>{
+ if(!('serial' in navigator)){log('[Aviso] Web Serial no disponible. Usa Chrome/Edge en escritorio o Android.');return}
+ try{
+  if(port){wr.releaseLock();await port.close();port=wr=null;$('ser').textContent='CONECTAR ARDUINO';$('ser').style.background='#059669';log('[Sistema] Desconectado.');return}
+  port=await navigator.serial.requestPort();await port.open({baudRate:9600});wr=port.writable.getWriter();
+  $('ser').textContent='DESCONECTAR';$('ser').style.background='#dc2626';log('[Sistema] Conectado a Arduino (9600).')
+ }catch(e){port=wr=null;log('[Error] '+e.message)}};
+const FW=`// PEPESONGS - Firmware Arduino Uno (PlatformIO / VS Code -> src/main.cpp)
+// 10 LEDs: pines 12,2,3,4,5,6,7,9,10,11 | Buzzer pasivo: pin 8
+// Protocolo serial 9600: "mascara,frecuencia\\n"  (bit i = LED i)
+#include <Arduino.h>
+
+const uint8_t LEDS[10] = {12, 2, 3, 4, 5, 6, 7, 9, 10, 11};
+const uint8_t BUZ = 8;
 
 void setup() {
   Serial.begin(9600);
-  for (int i = 0; i &lt; TOTAL_LEDS; i++) pinMode(LEDS[i], OUTPUT);
-  pinMode(BUZZER_PIN, OUTPUT);
-  pad0Fanfare();
+  Serial.setTimeout(15);
+  for (uint8_t i = 0; i < 10; i++) pinMode(LEDS[i], OUTPUT);
+  pinMode(BUZ, OUTPUT);
+  for (uint8_t i = 0; i < 10; i++) { digitalWrite(LEDS[i], HIGH); delay(40); }
+  for (uint8_t i = 0; i < 10; i++) digitalWrite(LEDS[i], LOW);
 }
 
 void loop() {
-  if (Serial.available() &gt; 0) {
-    char cmd = Serial.read();
-    switch (cmd) {
-      case '1': case 'C': pad1Cowbell(); break;
-      case '2': pad2SubDrop(); break;
-      case '3': case 'X': pad3Explosion(); break;
-      case '4': pad4VocalChop(); break;
-      case '5': pad5SlapBass(); break;
-      case '6': case 'F': pad6Fuse(); break;
-      case '7': pad7Scratch(); break;
-      case '8': pad8Laser(); break;
-      case '9': pad9Glitch(); break;
-      case '0': pad0Fanfare(); break;
-      case 'D': pad3Explosion(); break;
+  if (Serial.available()) {
+    String l = Serial.readStringUntil('\\n');
+    int c = l.indexOf(',');
+    if (c > 0) {
+      int mask = l.substring(0, c).toInt();
+      int freq = l.substring(c + 1).toInt();
+      for (uint8_t i = 0; i < 10; i++) digitalWrite(LEDS[i], (mask >> i) & 1);
+      if (freq >= 31) tone(BUZ, freq, 60); else noTone(BUZ);
     }
   }
 }
-</code></pre>
-      </div>
-
-      <div class="p-3 border-t border-retroBorder bg-black/50 flex items-center justify-between">
-        <span class="text-xs text-slate-400 font-crt">Pégalo en VS Code -&gt; src/main.cpp y presiona Upload (➡️)</span>
-        <button id="btnCopyCode" class="px-3.5 py-1.5 bg-phonkGold hover:bg-yellow-400 text-black font-pixel text-[10px] rounded-lg flex items-center gap-1.5 transition glow-gold font-bold">
-          <i class="fa-solid fa-copy"></i> Copiar Código
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- JAVASCRIPT UNIFICADO COMPLETO Y TOTALMENTE FUNCIONAL                      -->
-  <!-- ========================================================================= -->
-  <script>
-    // ESTADO GLOBAL DE AUDIO Y PANTALLA
-    let audioCtx = null;
-    let masterGainNode = null;
-    let lowPassFilterNode = null;
-    let highPassFilterNode = null;
-    let driveWaveShaperNode = null;
-    let stereoPannerNode = null;
-
-    let masterVolume = 0.85;
-    let bpmValue = 140;
-    let dualFilterValue = 0;
-    let subDriveValue = 40;
-    let showGrid = true;
-
-    let isSerialConnected = false;
-    let serialPort = null;
-    let serialWriter = null;
-
-    const CANVAS_SIZE = 64;
-    const canvas = document.getElementById('pixelCanvas');
-    const ctx = canvas.getContext('2d');
-
-    // CATEGORÍAS (10 CATEGORÍAS x 20 BUCLES = 200 RITMOS)
-    const CATEGORIES = [
-      { id: 'all', name: 'TODOS (200 RITMOS)', icon: 'fa-border-all' },
-      { id: 0, name: 'Drift Phonk & Memphis', icon: 'fa-bell' },
-      { id: 1, name: 'EDM & Big Room', icon: 'fa-bolt' },
-      { id: 2, name: 'Techno & Acid 303', icon: 'fa-wave-square' },
-      { id: 3, name: 'Deep House & Slap Bass', icon: 'fa-compact-disc' },
-      { id: 4, name: 'Dubstep & Riddim', icon: 'fa-skull' },
-      { id: 5, name: 'Synthwave & Cyberpunk', icon: 'fa-sun' },
-      { id: 6, name: 'Trap & Drill', icon: 'fa-drum' },
-      { id: 7, name: 'Chiptune 8-Bit', icon: 'fa-gamepad' },
-      { id: 8, name: 'Dembow & Funk Montagem', icon: 'fa-fire-burner' },
-      { id: 9, name: 'Transiciones DJ & FX', icon: 'fa-explosion' }
-    ];
-
-    const CAT_NAMES = [
-      "Drift Phonk", "EDM Electro", "Techno Acid", "Deep House", "Dubstep Riddim",
-      "Synthwave", "Trap Drill", "Chiptune 8Bit", "Dembow & Funk", "Transitions FX"
-    ];
-
-    const SOUND_TYPES = [
-      ["Phonk Drift Beat", "Memphis Cowbell Loop", "808 Phonk Bassline", "Drift Bell Arp Beat", "Siren Sub Phonk Groove", "Memphis Vocal Chop", "Hard Cowbell Rhythm", "Dark Phonk Bounce", "808 Sub Slide Loop", "Cyber Cowbell Groove", "Phonk Trap Beat", "Memphis Drone Rhythm", "Drift Bassline Drive", "Pitch Wobble Beat", "Phonk Snare Roll", "Synth Lead Beat", "Memphis Chant", "Sub Boom Loop", "Dark Memphis Beat", "Gold Cowbell Loop"],
-      ["Festival Mainstage", "Supersaw Electro", "Sidechain EDM Pump", "Big Room Kick Clap", "Anthem Lead Beat", "Electro Wobble Groove", "EDM Drop Rhythm", "Pluck Chord Dance", "Electro Bass Drive", "Synth Lead Party", "High Riser Beat", "Festival Sub Boom", "Saw Synth Electro", "Cyber Club Beat", "EDM Build-Up Loop", "Big Room Drop", "Neon Electro Beat", "Anthem Pump Loop", "High Energy EDM", "Club Electro Drive"],
-      ["303 Acid Techno", "Peak Time Industrial", "Warehouse Pulse", "Acid Saw Sweep", "Dark Techno Rumble", "Rhythm Pulse 135", "Acid Stab Drive", "Sub Pulse Techno", "Metal Clang Loop", "Industrial Beat", "Acid Wobble Drive", "Underground Rave", "Techno Hat Groove", "Distorted Sub Techno", "Dark Acid Lead", "Warehouse Acid", "Techno Anvil Beat", "Acid Ramp Pulse", "Hard Techno Beat", "Peak Acid Groove"],
-      ["Slap Funk Bassline", "4/4 House Club", "Deep House Organ", "Funky House Bass", "Rhodes House Groove", "Disco HiHat Beat", "Sub Bass House", "Jackin House Beat", "Deep Chord Club", "Slap Bass Solo", "House Vocal Chop", "Filter House Drive", "Disco Synth House", "Warm Pad House", "Funky Slap Loop", "House Clap Rhythm", "Club Slap Beat", "Deep Bassline House", "Sax House Groove", "House Riser Beat"],
-      ["Heavy Wobble Dubstep", "Riddim Growl Punch", "Dubstep Snare Drop", "Screech Lead Riddim", "Monster Sub Wobble", "Dubstep 140 Rhythm", "Cyber Laser Riddim", "Yoi Bass Beat", "Heavy Clap Dubstep", "Sub Drop 20Hz", "Glitch Dubstep Beat", "Metal Growl Loop", "Sub Distortion", "Terror Lead Riddim", "Wobble Pulse Beat", "Dubstep Sub Slide", "Riddim Bounce Beat", "Screech Beat Drop", "Kick Drop Dubstep", "Bass Ramp Beat"],
-      ["Retrowave Synth", "Darksynth Cyber Pulse", "Outrun Saw Bassline", "Gated Snare Synthwave", "Neon Lead 80s", "Cyberpunk Arp Drive", "Analog Chord Synth", "Cosmic Pad Beat", "Retrowave Kick Snare", "Space Synth Loop", "Synthwave Bass Beat", "Cyber Pulse Dark", "Sci-Fi Lead Synth", "Retro Laser Beat", "Outrun Synth Drive", "Vaporwave Synth", "Cyberpunk Dark Beat", "Staccato Synth Loop", "Retro Synth Pump", "80s Cyber Drive"],
-      ["Drill HiHat Roll", "808 Trap Sub Slide", "Memphis Trap Bounce", "808 Sub Boom Beat", "Trap Brass Horn", "Dark Drill Bass", "Snare Roll Drive", "808 Rimshot Loop", "Trap Chant Bounce", "808 Distortion Trap", "Drill Slide Bass", "Trap Bell Melody", "Trap Pluck Bounce", "Dark Trap Horn", "808 Sub Pulse Trap", "Trap Clap Drive", "HiHat Triplet Trap", "Trap Vocal Bounce", "Heavy 808 Trap", "Trap Drill Combo"],
-      ["NES 8-Bit Arcade", "Chiptune Square Lead", "Arcade Arp Melody", "8-Bit Jump Beat", "NES Triangle Bass", "Chiptune Coin Rhythm", "8-Bit Noise Snare", "Arcade Laser Beat", "NES Victory Fanfare", "Game Over Glitch", "8-Bit Pluck Groove", "Chiptune Powerup", "NES Boss Battle", "Chiptune Pixel Pulse", "8-Bit Retro Melody", "Arcade Action Loop", "Chiptune Bass Bounce", "8-Bit Wave Rhythm", "NES Synth Lead", "Arcade Pixel Beat"],
-      ["Baile Funk Montagem", "Latin Dembow Loop", "Mandrakão Sub Bass", "Funk Carioca Tambor", "Reggaeton Dembow 95", "Funk Vocal Chop", "Latin Trap Dembow", "Mandrakão Heavy Sub", "Dembow Perreo Beat", "Funk Montagem Acid", "Latin Urban Dembow", "Funk Carioca Snare", "Brazilian Mandrakão", "Dembow Sub Drop", "Funk Montagem Cowbell", "Reggaeton Synth Lead", "Mandrakão Bass Drive", "Dembow Vocal Chant", "Funk Whistle Beat", "Dembow Master Loop"],
-      ["Creeper Fuse Rhythm", "TNT Explosion Drop", "DJ Scratch Vinyl", "White Noise Riser", "Vinyl Tape Stop", "Sub Downlifter Drop", "DJ Airhorn Arcade", "Glitch Burst Drop", "Strobe Flash Beat", "Spark Ignition Loop", "TNT Detonation", "Cyber Alarm DJ", "Microphone Drop", "Vinyl Spin Drop", "Space Laser FX", "Impact Boom DJ", "Sub Riser Drop", "Creeper Spark Loop", "Victory Chiptune", "DJ Transition Master"]
-    ];
-
-    // CONSTRUCCIÓN DEL CATÁLOGO (200 ITEMS)
-    const SOUND_CATALOG = [];
-    let globalIdCount = 1;
-    for (let c = 0; c < 10; c++) {
-      for (let s = 0; s < 20; s++) {
-        SOUND_CATALOG.push({
-          id: globalIdCount,
-          catId: c,
-          name: `${globalIdCount}. ${SOUND_TYPES[c][s]}`,
-          desc: `${CAT_NAMES[c]} (Ritmo DJ)`,
-          baseFreq: 55 + (s * 20) + (c * 12),
-          wave: ['sawtooth', 'square', 'sine', 'triangle'][s % 4]
-        });
-        globalIdCount++;
-      }
-    }
-
-    let currentCategory = 'all';
-    let searchQuery = '';
-
-    const activeLibraryLoops = new Array(201).fill(false);
-    const libraryAudioNodes = new Array(201).fill(null);
-    const padAssignments = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-    let frameCounter = 0;
-    let bassPulse = 0;
-    let isFuseActive = false;
-    let fuseTimer = 0;
-    let flashAlpha = 0;
-    let flashColor = '#FFFFFF';
-    let isExplodingRed = false;
-
-    const particles = [];
-    const ledStates = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-    // REJILLA PIXEL ART CREEPER (24x28)
-    const _ = null;
-    const G1 = '#00FF66'; const G2 = '#00AA00'; const G3 = '#005500'; const G4 = '#0B300B'; const K = '#000000';
-    const creeperGrid = [
-      _,_,_,_,G1,G2,G1,G3,G2,G1,G2,G3,G1,G2,G3,G1,G2,G1,_,_,_,_,_,_,
-      _,_,_,_,G2,G3,G1,G2,G3,G1,G2,G1,G3,G2,G1,G3,G2,G3,_,_,_,_,_,_,
-      _,_,_,_,G3,G1,K,K,K,G2,G3,G1,G2,K,K,K,G1,G2,_,_,_,_,_,_,
-      _,_,_,_,G1,G2,K,K,K,G1,G2,G3,G1,K,K,K,G3,G1,_,_,_,_,_,_,
-      _,_,_,_,G2,G3,K,K,K,G3,G1,G2,G3,K,K,K,G2,G3,_,_,_,_,_,_,
-      _,_,_,_,G3,G1,G2,G3,G1,K,K,K,K,G2,G3,G1,G1,G2,_,_,_,_,_,_,
-      _,_,_,_,G1,G2,G3,G1,K,K,K,K,K,K,G1,G2,G3,G1,_,_,_,_,_,_,
-      _,_,_,_,G2,G3,G1,K,K,K,K,K,K,K,K,G3,G2,G3,_,_,_,_,_,_,
-      _,_,_,_,G3,G1,G2,K,K,K,K,K,K,K,K,G1,G1,G2,_,_,_,_,_,_,
-      _,_,_,_,G1,G2,G3,K,K,G1,G2,G3,G1,K,K,G2,G3,G1,_,_,_,_,_,_,
-      _,_,_,_,G2,G3,G1,K,K,G3,G1,G2,G3,K,K,G1,G2,G3,_,_,_,_,_,_,
-      _,_,_,_,G3,G1,G2,G3,G1,G2,G3,G1,G2,G3,G1,G2,G1,G2,_,_,_,_,_,_,
-      _,_,_,_,_,_,G1,G2,G3,G1,G2,G3,G1,G2,G3,G1,_,_,_,_,_,_,_,_,
-      _,_,_,_,_,_,G2,G3,G1,G2,G3,G1,G2,G3,G1,G2,_,_,_,_,_,_,_,_,
-      _,_,_,_,_,_,G3,G1,G2,G3,G1,G2,G3,G1,G2,G3,_,_,_,_,_,_,_,_,
-      _,_,_,_,_,_,G1,G2,G3,G1,G2,G3,G1,G2,G3,G1,_,_,_,_,_,_,_,_,
-      _,_,_,_,_,_,G2,G3,G1,G2,G3,G1,G2,G3,G1,G2,_,_,_,_,_,_,_,_,
-      _,_,_,_,_,_,G3,G1,G2,G3,G1,G2,G3,G1,G2,G3,_,_,_,_,_,_,_,_,
-      _,_,_,_,_,G1,G2,G3,G1,_,_,_,_,G2,G3,G1,G2,_,_,_,_,_,_,_,
-      _,_,_,_,_,G2,G3,G1,G2,_,_,_,_,G3,G1,G2,G3,_,_,_,_,_,_,_,
-      _,_,_,_,_,G3,G4,G3,G4,_,_,_,_,G4,G3,G4,G3,_,_,_,_,_,_,_
-    ];
-
-    // INICIALIZADOR DE AUDIO
-    function initAudioContext() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        lowPassFilterNode = audioCtx.createBiquadFilter();
-        lowPassFilterNode.type = 'lowpass';
-        lowPassFilterNode.frequency.setValueAtTime(20000, audioCtx.currentTime);
-
-        highPassFilterNode = audioCtx.createBiquadFilter();
-        highPassFilterNode.type = 'highpass';
-        highPassFilterNode.frequency.setValueAtTime(10, audioCtx.currentTime);
-
-        driveWaveShaperNode = audioCtx.createWaveShaper();
-        updateSubDriveCurve(subDriveValue);
-
-        if (audioCtx.createStereoPanner) {
-          stereoPannerNode = audioCtx.createStereoPanner();
-          stereoPannerNode.pan.setValueAtTime(0, audioCtx.currentTime);
-        }
-
-        masterGainNode = audioCtx.createGain();
-        masterGainNode.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
-
-        driveWaveShaperNode.connect(lowPassFilterNode);
-        lowPassFilterNode.connect(highPassFilterNode);
-
-        if (stereoPannerNode) {
-          highPassFilterNode.connect(stereoPannerNode);
-          stereoPannerNode.connect(masterGainNode);
-        } else {
-          highPassFilterNode.connect(masterGainNode);
-        }
-
-        masterGainNode.connect(audioCtx.destination);
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-
-    function updateSubDriveCurve(amount) {
-      if (!driveWaveShaperNode) return;
-      const k = amount;
-      const n_samples = 44100;
-      const curve = new Float32Array(n_samples);
-      const deg = Math.PI / 180;
-      for (let i = 0; i < n_samples; ++i) {
-        const x = (i * 2) / n_samples - 1;
-        curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
-      }
-      driveWaveShaperNode.curve = curve;
-    }
-
-    function updateDualFilterNodes() {
-      if (!audioCtx) return;
-      const t = audioCtx.currentTime;
-      if (dualFilterValue < 0) {
-        const lpFreq = (dualFilterValue + 100) / 100 * 19880 + 120;
-        lowPassFilterNode.frequency.setTargetAtTime(lpFreq, t, 0.05);
-        highPassFilterNode.frequency.setTargetAtTime(10, t, 0.05);
-        document.getElementById('lblDualFilter').textContent = `LP (${Math.round(lpFreq)}Hz)`;
-      } else if (dualFilterValue > 0) {
-        const hpFreq = (dualFilterValue / 100) * 5990 + 10;
-        lowPassFilterNode.frequency.setTargetAtTime(20000, t, 0.05);
-        highPassFilterNode.frequency.setTargetAtTime(hpFreq, t, 0.05);
-        document.getElementById('lblDualFilter').textContent = `HP (${Math.round(hpFreq)}Hz)`;
-      } else {
-        lowPassFilterNode.frequency.setTargetAtTime(20000, t, 0.05);
-        highPassFilterNode.frequency.setTargetAtTime(10, t, 0.05);
-        document.getElementById('lblDualFilter').textContent = 'NEUTRO';
-      }
-    }
-
-    // FUNCIÓN DE REPRODUCCIÓN UNIFICADA (LIBRERÍA Y PADS)
-    function playProceduralSound(soundId, isLoopToggle = true) {
-      initAudioContext();
-      const soundItem = SOUND_CATALOG.find(s => s.id === soundId);
-      if (!soundItem) return;
-
-      if (isLoopToggle) {
-        if (activeLibraryLoops[soundId]) {
-          stopProceduralLoop(soundId);
-        } else {
-          startProceduralLoop(soundItem);
-          updateSoundCardState(soundId, true);
-        }
-      } else {
-        // Disparo de impacto (One-shot pad)
-        triggerOneShotSound(soundItem);
-      }
-    }
-
-    function triggerOneShotSound(soundItem) {
-      if (!audioCtx) return;
-      const t = audioCtx.currentTime;
-      const genre = soundItem.catId;
-      const freq = soundItem.baseFreq;
-
-      // SINTETIZADOR DE IMPACTO RÁPIDO
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = soundItem.wave;
-      osc.frequency.setValueAtTime(freq * 1.5, t);
-      osc.frequency.exponentialRampToValueAtTime(freq, t + 0.15);
-
-      gain.gain.setValueAtTime(masterVolume * 0.9, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-
-      osc.connect(gain);
-      gain.connect(driveWaveShaperNode);
-      osc.start(t);
-      osc.stop(t + 0.25);
-
-      // BATERÍA DE IMPACTO PUNCHY
-      const kOsc = audioCtx.createOscillator();
-      const kGain = audioCtx.createGain();
-      kOsc.frequency.setValueAtTime(180, t);
-      kOsc.frequency.exponentialRampToValueAtTime(35, t + 0.12);
-      kGain.gain.setValueAtTime(masterVolume * 0.95, t);
-      kGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-      kOsc.connect(kGain);
-      kGain.connect(driveWaveShaperNode);
-      kOsc.start(t);
-      kOsc.stop(t + 0.15);
-
-      bassPulse = 0.9;
-      triggerSparks(32, 32, 25);
-
-      if (genre === 9 || soundItem.id % 6 === 0) {
-        isFuseActive = true; fuseTimer = 18; triggerFlash('#FF0000'); isExplodingRed = true;
-      }
-
-      // Sincronizar Arduino
-      sendSerialChar(String((soundItem.id % 10) + 1));
-      const pattern = [0,0,0,0,0,0,0,0,0,0];
-      pattern[soundItem.id % 10] = 1;
-      updateHardwareInspector(pattern, Math.round(freq));
-    }
-
-    function startProceduralLoop(item) {
-      const soundId = item.id;
-      if (!audioCtx) return;
-
-      stopProceduralLoop(soundId);
-      activeLibraryLoops[soundId] = true;
-
-      const genre = item.catId;
-      const freq = item.baseFreq;
-      let currentStep = 0;
-
-      const timerId = setInterval(() => {
-        if (!activeLibraryLoops[soundId] || !audioCtx) {
-          clearInterval(timerId);
-          return;
-        }
-
-        const t = audioCtx.currentTime;
-        const step = currentStep % 16;
-        const intervalTime = (60000 / bpmValue) / 4;
-
-        let playKick = false, playSnare = false, playHat = false;
-
-        if (genre === 8) { // Dembow / Funk
-          playKick = (step === 0 || step === 6 || step === 8 || step === 14);
-          playSnare = (step === 3 || step === 7 || step === 11 || step === 15);
-          playHat = (step % 2 === 0);
-        } else if (genre === 0 || genre === 6) { // Phonk / Trap
-          playKick = (step === 0 || step === 10);
-          playSnare = (step === 4 || step === 12);
-          playHat = (step % 2 === 0 || step === 14 || step === 15);
-        } else { // House, EDM, Techno
-          playKick = (step % 4 === 0);
-          playSnare = (step === 4 || step === 12);
-          playHat = (step % 2 === 2);
-        }
-
-        if (playKick) {
-          const kOsc = audioCtx.createOscillator();
-          const kGain = audioCtx.createGain();
-          kOsc.frequency.setValueAtTime(140, t);
-          kOsc.frequency.exponentialRampToValueAtTime(32, t + 0.12);
-          kGain.gain.setValueAtTime(masterVolume * 0.85, t);
-          kGain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
-          kOsc.connect(kGain); kGain.connect(driveWaveShaperNode);
-          kOsc.start(t); kOsc.stop(t + 0.14);
-          bassPulse = Math.max(bassPulse, 0.6);
-        }
-
-        if (playSnare) {
-          const sBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.08, audioCtx.sampleRate);
-          const sData = sBuffer.getChannelData(0);
-          for (let i = 0; i < sData.length; i++) sData[i] = Math.random() * 2 - 1;
-          const sSrc = audioCtx.createBufferSource(); sSrc.buffer = sBuffer;
-          const sFilter = audioCtx.createBiquadFilter(); sFilter.type = 'highpass'; sFilter.frequency.value = 1200;
-          const sGain = audioCtx.createGain(); sGain.gain.setValueAtTime(masterVolume * 0.45, t);
-          sGain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-          sSrc.connect(sFilter); sFilter.connect(sGain); sGain.connect(driveWaveShaperNode);
-          sSrc.start(t);
-        }
-
-        if (step % 2 === 0) {
-          const bOsc = audioCtx.createOscillator();
-          const bGain = audioCtx.createGain();
-          bOsc.type = item.wave;
-          const notes = [freq, freq * 1.122, freq * 1.26, freq * 1.498];
-          bOsc.frequency.setValueAtTime(notes[(step / 2) % 4], t);
-          bGain.gain.setValueAtTime(masterVolume * 0.35, t);
-          bGain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
-          bOsc.connect(bGain); bGain.connect(driveWaveShaperNode);
-          bOsc.start(t); bOsc.stop(t + 0.16);
-        }
-
-        if (step % 4 === 0) {
-          const activeIndex = (step / 4) % 10;
-          const ledPattern = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-          ledPattern[activeIndex] = 1;
-          sendSerialChar(String(activeIndex + 1));
-          updateHardwareInspector(ledPattern, Math.round(freq));
-        }
-
-        currentStep++;
-      }, (60000 / bpmValue) / 4);
-
-      libraryAudioNodes[soundId] = { timerId: timerId };
-    }
-
-    function stopProceduralLoop(soundId) {
-      activeLibraryLoops[soundId] = false;
-      const activeObj = libraryAudioNodes[soundId];
-      if (activeObj) {
-        if (activeObj.timerId) clearInterval(activeObj.timerId);
-        libraryAudioNodes[soundId] = null;
-      }
-      updateSoundCardState(soundId, false);
-    }
-
-    function stopAllLoops() {
-      for (let i = 1; i <= 200; i++) {
-        if (activeLibraryLoops[i]) {
-          stopProceduralLoop(i);
-        }
-      }
-      updateHardwareInspector([0,0,0,0,0,0,0,0,0,0], 0);
-      sendSerialChar('0');
-    }
-
-    // ACTUALIZACIÓN DE INTERFAZ DÍNAMICA
-    function buildCategoryTabs() {
-      const container = document.getElementById('categoryTabs');
-      if (!container) return;
-      container.innerHTML = '';
-
-      CATEGORIES.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = `px-3 py-2 rounded-xl font-pixel text-[8px] flex items-center gap-1.5 shrink-0 transition cursor-pointer min-h-[38px] ${currentCategory === cat.id ? 'bg-phonkGold text-black font-bold glow-gold' : 'bg-retroCard border border-retroBorder text-slate-300 hover:text-white'}`;
-        btn.innerHTML = `<i class="fa-solid ${cat.icon}"></i> ${cat.name}`;
-        btn.addEventListener('click', () => {
-          currentCategory = cat.id;
-          buildCategoryTabs();
-          renderSoundGrid();
-        });
-        container.appendChild(btn);
-      });
-    }
-
-    function renderSoundGrid() {
-      const grid = document.getElementById('soundGrid');
-      if (!grid) return;
-      grid.innerHTML = '';
-
-      let filtered = SOUND_CATALOG;
-      if (currentCategory !== 'all') {
-        filtered = filtered.filter(s => s.catId === currentCategory);
-      }
-      if (searchQuery.trim() !== '') {
-        const q = searchQuery.toLowerCase();
-        filtered = filtered.filter(s => s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q));
-      }
-
-      filtered.forEach(sound => {
-        const card = document.createElement('div');
-        const isActive = activeLibraryLoops[sound.id];
-        card.setAttribute('data-sound-id', sound.id);
-        card.className = `soundCard min-h-[52px] p-2 rounded-xl border ${isActive ? 'bg-emerald-950/80 border-creeperGreen glow-creeper' : 'bg-retroCard border-retroBorder hover:border-phonkPurple'} flex flex-col justify-between cursor-pointer transition active:scale-95 group select-none`;
-
-        card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="font-pixel text-[7.5px] text-slate-200 group-hover:text-phonkGold truncate">${sound.name}</span>
-            <span class="w-2.5 h-2.5 rounded-full ${isActive ? 'bg-creeperGreen glow-creeper animate-ping' : 'bg-slate-700'} sound-led"></span>
-          </div>
-          <div class="flex items-center justify-between text-[8.5px] font-crt text-slate-400">
-            <span>${sound.desc}</span>
-            <span class="text-[7px] font-pixel ${isActive ? 'text-creeperGreen font-bold' : 'text-phonkPurple'}">${isActive ? 'ENCENDIDO' : 'PLAY'}</span>
-          </div>
-        `;
-
-        card.addEventListener('click', () => playProceduralSound(sound.id, true));
-        grid.appendChild(card);
-      });
-    }
-
-    function updateSoundCardState(soundId, active) {
-      const card = document.querySelector(`.soundCard[data-sound-id="${soundId}"]`);
-      if (card) {
-        const led = card.querySelector('.sound-led');
-        const txt = card.querySelector('.font-pixel:last-child');
-        if (active) {
-          card.classList.add('bg-emerald-950/80', 'border-creeperGreen', 'glow-creeper');
-          card.classList.remove('bg-retroCard', 'border-retroBorder');
-          if (led) led.className = 'w-2.5 h-2.5 rounded-full bg-creeperGreen glow-creeper animate-ping sound-led';
-          if (txt) { txt.textContent = 'ENCENDIDO'; txt.className = 'text-[7px] font-pixel text-creeperGreen font-bold'; }
-        } else {
-          card.classList.remove('bg-emerald-950/80', 'border-creeperGreen', 'glow-creeper');
-          card.classList.add('bg-retroCard', 'border-retroBorder');
-          if (led) led.className = 'w-2.5 h-2.5 rounded-full bg-slate-700 sound-led';
-          if (txt) { txt.textContent = 'PLAY'; txt.className = 'text-[7px] font-pixel text-phonkPurple'; }
-        }
-      }
-    }
-
-    function buildPadsUI() {
-      const container = document.getElementById('padsGrid');
-      if (!container) return;
-      container.innerHTML = '';
-
-      padAssignments.forEach((soundId, padIdx) => {
-        const padKey = (padIdx + 1) % 10;
-        const soundItem = SOUND_CATALOG.find(s => s.id === soundId) || SOUND_CATALOG[0];
-
-        const padBtn = document.createElement('button');
-        padBtn.setAttribute('data-pad-index', padIdx);
-        padBtn.className = 'btnPad min-h-[50px] p-2 rounded-xl bg-gradient-to-br from-purple-950 via-retroCard to-retroCard border-2 border-phonkPurple hover:border-phonkGold text-left flex flex-col justify-between transition active:scale-95 shadow-lg group';
-
-        padBtn.innerHTML = `
-          <div class="flex justify-between items-start">
-            <span class="font-pixel text-[7.5px] text-phonkGold group-hover:text-white truncate">${padKey}. ${soundItem.name}</span>
-            <span class="font-pixel text-[7.5px] bg-purple-950 text-phonkGold px-1.5 py-0.5 rounded border border-phonkGold/50">${padKey}</span>
-          </div>
-          <div class="flex justify-between items-center text-[8.5px] font-crt text-slate-300">
-            <span>${soundItem.desc}</span>
-            <i class="fa-solid fa-bolt text-phonkPurple text-xs"></i>
-          </div>
-        `;
-
-        padBtn.addEventListener('click', () => {
-          triggerPad(padIdx);
-          padBtn.classList.add('pad-active');
-          setTimeout(() => padBtn.classList.remove('pad-active'), 140);
-        });
-
-        container.appendChild(padBtn);
-      });
-    }
-
-    function triggerPad(padIdx) {
-      const soundId = padAssignments[padIdx];
-      playProceduralSound(soundId, false);
-    }
-
-    // MACROS DE TRANSICIÓN
-    function executeMacroIntro() {
-      playProceduralSound(181, false);
-      dualFilterValue = -80; document.getElementById('rngDualFilter').value = -80; updateDualFilterNodes();
-      let sweep = -80;
-      const interval = setInterval(() => {
-        sweep += 5;
-        if (sweep >= 0) { sweep = 0; clearInterval(interval); }
-        dualFilterValue = sweep; document.getElementById('rngDualFilter').value = sweep; updateDualFilterNodes();
-      }, 120);
-    }
-
-    function executeMacroDrop() {
-      playProceduralSound(181, false);
-      playProceduralSound(1, true);
-      playProceduralSound(7, true);
-      dualFilterValue = 0; document.getElementById('rngDualFilter').value = 0; updateDualFilterNodes();
-      sendSerialChar('D');
-    }
-
-    function executeMacroBreakdown() {
-      stopAllLoops();
-      playProceduralSound(161, true);
-      dualFilterValue = -50; document.getElementById('rngDualFilter').value = -50; updateDualFilterNodes();
-    }
-
-    function executeMacroOutro() {
-      let fade = masterVolume;
-      const interval = setInterval(() => {
-        fade -= 0.05;
-        if (fade <= 0.05) {
-          fade = 0; clearInterval(interval); stopAllLoops();
-          masterVolume = 0.85; document.getElementById('rngMasterVol').value = 85; document.getElementById('lblMasterVol').textContent = '85%';
-        } else {
-          masterVolume = fade; document.getElementById('rngMasterVol').value = Math.round(fade * 100); document.getElementById('lblMasterVol').textContent = `${Math.round(fade * 100)}%`;
-        }
-        if (masterGainNode) masterGainNode.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
-      }, 150);
-    }
-
-    // WEB SERIAL API
-    async function toggleSerialConnection() {
-      if (!("serial" in navigator)) {
-        logSerial("[Aviso] Web Serial API no disponible en este navegador/dispositivo.");
-        alert("Web Serial no está soportado en este navegador. Audio y pantalla funcionando al 100%.");
-        return;
-      }
-
-      if (isSerialConnected) {
-        if (serialWriter) serialWriter.releaseLock();
-        if (serialPort) await serialPort.close();
-        isSerialConnected = false; updateSerialUI(false); logSerial("[Sistema] Desconectado de Arduino.");
-      } else {
-        try {
-          serialPort = await navigator.serial.requestPort();
-          await serialPort.open({ baudRate: 9600 });
-          const encoder = new TextEncoderStream(); encoder.readable.pipeTo(serialPort.writable);
-          serialWriter = encoder.writable.getWriter();
-          isSerialConnected = true; updateSerialUI(true); logSerial("[Sistema] Conectado a Arduino Uno.");
-        } catch (err) { logSerial("[Error] " + err.message); }
-      }
-    }
-
-    function updateSerialUI(connected) {
-      const btn = document.getElementById('btnConnectSerial');
-      const lbl = document.getElementById('lblSerialStatus');
-      if (connected) {
-        btn.className = 'px-2.5 py-1.5 bg-red-600 hover:bg-red-500 text-white font-pixel text-[9px] rounded-lg transition shadow-md';
-        if (lbl) lbl.textContent = 'DESCONECTAR';
-      } else {
-        btn.className = 'px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-pixel text-[9px] rounded-lg transition shadow-md';
-        if (lbl) lbl.textContent = 'CONECTAR ARDUINO';
-      }
-    }
-
-    function sendSerialChar(ch) {
-      if (isSerialConnected && serialWriter) {
-        try { serialWriter.write(ch); } catch (e) { console.warn("Serial error:", e); }
-      }
-    }
-
-    function updateHardwareInspector(statesArray, toneFreq) {
-      for (let i = 0; i < 10; i++) {
-        ledStates[i] = statesArray[i];
-        const elem = document.getElementById(`vled-${i}`);
-        if (elem) {
-          if (statesArray[i] === 1) {
-            elem.className = 'w-5 h-5 rounded-full bg-creeperGreen text-black font-bold border border-creeperGreen flex items-center justify-center text-[7px] font-mono glow-creeper';
-          } else {
-            elem.className = 'w-5 h-5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[7px] text-slate-400 font-mono';
-          }
-        }
-      }
-
-      const lblTone = document.getElementById('lblToneFreq');
-      const lblNote = document.getElementById('lblNoteName');
-      const buzzerVisual = document.getElementById('buzzerVisual');
-
-      if (lblTone) lblTone.textContent = `${toneFreq} Hz`;
-      if (lblNote) lblNote.textContent = toneFreq > 0 ? getNoteName(toneFreq) : 'BUZZER PASIVO: LISTO';
-
-      if (buzzerVisual) {
-        if (toneFreq > 0) {
-          buzzerVisual.className = 'w-7 h-7 rounded-full bg-phonkGold text-black font-bold flex items-center justify-center text-xs scale-110 transition';
-        } else {
-          buzzerVisual.className = 'w-7 h-7 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 text-xs';
-        }
-      }
-    }
-
-    function getNoteName(freq) {
-      if (freq >= 80 && freq < 180) return 'SUB-BASS GRAVE';
-      if (freq >= 180 && freq < 280) return 'DO4 (C4 = 262Hz)';
-      if (freq >= 280 && freq < 350) return 'MI4 (E4 = 330Hz)';
-      if (freq >= 350 && freq < 420) return 'SOL4 (G4 = 392Hz)';
-      if (freq >= 420 && freq < 480) return 'LA4 (A4 = 440Hz)';
-      if (freq >= 480 && freq < 550) return 'DO5 (C5 = 523Hz)';
-      if (freq >= 550 && freq < 620) return 'RE5 (587Hz)';
-      if (freq >= 620 && freq < 720) return 'MI5 (E5 = 659Hz)';
-      if (freq >= 720 && freq < 830) return 'SOL5 (G5 = 784Hz)';
-      if (freq >= 830) return 'DO6 (C6 = 1047Hz)';
-      return 'TONO GRAVE';
-    }
-
-    function logSerial(msg) {
-      const container = document.getElementById('txtSerialLog');
-      if (container) {
-        const item = document.createElement('div');
-        item.textContent = msg; container.appendChild(item); container.scrollTop = container.scrollHeight;
-      }
-    }
-
-    // BUCLE DE RENDERIZADO RÁPIDO (CANVAS CREEPER)
-    let lastTime = performance.now();
-    let fps = 60;
-
-    function renderLoop(now) {
-      const delta = now - lastTime; lastTime = now;
-      fps = Math.round(1000 / (delta || 16));
-      document.getElementById('lblFps').textContent = fps;
-
-      frameCounter++;
-      ctx.fillStyle = '#030508'; ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-
-      renderBackgroundEq(); renderCreeperCharacter(); renderParticles();
-
-      if (flashAlpha > 0) {
-        ctx.fillStyle = flashColor; ctx.globalAlpha = flashAlpha; ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-        ctx.globalAlpha = 1.0; flashAlpha -= 0.08;
-      }
-
-      if (showGrid) {
-        ctx.fillStyle = 'rgba(168, 85, 247, 0.04)';
-        for (let x = 0; x < CANVAS_SIZE; x += 2) ctx.fillRect(x, 0, 1, CANVAS_SIZE);
-        for (let y = 0; y < CANVAS_SIZE; y += 2) ctx.fillRect(0, y, CANVAS_SIZE, 1);
-      }
-
-      if (bassPulse > 0) bassPulse -= 0.05;
-
-      if (isFuseActive) {
-        fuseTimer--; document.getElementById('lblFuseState').classList.remove('hidden');
-        if (fuseTimer <= 0) { isFuseActive = false; document.getElementById('lblFuseState').classList.add('hidden'); }
-      }
-
-      requestAnimationFrame(renderLoop);
-    }
-
-    function renderBackgroundEq() {
-      const colors = ['#A855F7', '#FFD700', '#00FF66', '#A855F7', '#FFD700', '#00FF66', '#A855F7', '#FFD700', '#00FF66', '#A855F7'];
-      for (let i = 0; i < 10; i++) {
-        let activeBoost = (activeLibraryLoops[i * 20 + 1] ? 14 : 0) + (ledStates[i] ? 18 : 0);
-        const h = Math.floor(Math.abs(Math.sin(frameCounter * 0.12 + i * 0.8)) * 18) + 4 + activeBoost;
-        const x = 2 + i * 6; const y = 64 - h;
-        ctx.fillStyle = colors[i]; ctx.globalAlpha = 0.35; ctx.fillRect(x, y, 4, h); ctx.globalAlpha = 1.0;
-      }
-    }
-
-    function renderCreeperCharacter() {
-      const idleY = Math.sin(frameCounter * 0.08) * 1.5;
-      const scaleX = 1 + bassPulse * 0.22; const scaleY = 1 - bassPulse * 0.14;
-      const shakeX = (Math.random() - 0.5) * bassPulse * 4; const shakeY = (Math.random() - 0.5) * bassPulse * 4;
-
-      ctx.save(); ctx.translate(32 + shakeX, 36 + idleY + shakeY); ctx.scale(scaleX, scaleY);
-      const startX = -12; const startY = -18;
-
-      for (let r = 0; r < 21; r++) {
-        for (let c = 0; c < 24; c++) {
-          let color = creeperGrid[r * 24 + c];
-          if (isExplodingRed && color && color !== K) { color = '#FF0000'; }
-          else if (isFuseActive && (frameCounter % 4 < 2) && color && color !== K) { color = '#FFFFFF'; }
-          if (color) { ctx.fillStyle = color; ctx.fillRect(startX + c, startY + r, 1, 1); }
-        }
-      }
-      if (isExplodingRed) isExplodingRed = false;
-      ctx.restore();
-    }
-
-    function triggerSparks(cx, cy, count = 20) {
-      const colors = ['#FFD700', '#A855F7', '#00FF66', '#FFFFFF'];
-      for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2; const speed = Math.random() * 3.0 + 0.5;
-        particles.push({
-          x: cx, y: cy, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-          life: Math.floor(Math.random() * 18) + 12, color: colors[Math.floor(Math.random() * colors.length)]
-        });
-      }
-    }
-
-    function renderParticles() {
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life--;
-        if (p.life <= 0 || p.x < 0 || p.x >= 64 || p.y < 0 || p.y >= 64) { particles.splice(i, 1); continue; }
-        ctx.fillStyle = p.color; ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
-      }
-    }
-
-    function triggerFlash(color) { flashColor = color; flashAlpha = 0.6; }
-
-    // EVENT LISTENERS Y VINCULACIÓN
-    window.addEventListener('load', () => {
-      buildCategoryTabs();
-      renderSoundGrid();
-      buildPadsUI();
-
-      const overlay = document.getElementById('touchUnlockOverlay');
-      const unlockAudio = () => {
-        initAudioContext();
-        if (audioCtx && audioCtx.state === 'running') {
-          overlay.style.opacity = '0';
-          setTimeout(() => overlay.classList.add('hidden'), 300);
-        }
-      };
-
-      overlay.addEventListener('click', unlockAudio);
-      overlay.addEventListener('touchstart', unlockAudio, { passive: true });
-      document.body.addEventListener('touchstart', initAudioContext, { once: true, passive: true });
-
-      document.getElementById('txtSoundSearch').addEventListener('input', (e) => {
-        searchQuery = e.target.value; renderSoundGrid();
-      });
-
-      document.getElementById('rngMasterVol').addEventListener('input', (e) => {
-        masterVolume = parseInt(e.target.value) / 100;
-        document.getElementById('lblMasterVol').textContent = `${e.target.value}%`;
-        if (masterGainNode) masterGainNode.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
-      });
-
-      document.getElementById('rngVoltageBpm').addEventListener('input', (e) => {
-        bpmValue = parseInt(e.target.value);
-        document.getElementById('lblVoltageBpm').textContent = `${bpmValue}BPM`;
-      });
-
-      document.getElementById('rngDualFilter').addEventListener('input', (e) => {
-        dualFilterValue = parseInt(e.target.value); updateDualFilterNodes();
-      });
-
-      document.getElementById('btnStopAll').addEventListener('click', () => {
-        initAudioContext(); stopAllLoops();
-      });
-
-      document.getElementById('macroIntro').addEventListener('click', () => { initAudioContext(); executeMacroIntro(); });
-      document.getElementById('macroDrop').addEventListener('click', () => { initAudioContext(); executeMacroDrop(); });
-      document.getElementById('macroBreakdown').addEventListener('click', () => { initAudioContext(); executeMacroBreakdown(); });
-      document.getElementById('macroOutro').addEventListener('click', () => { initAudioContext(); executeMacroOutro(); });
-
-      window.addEventListener('keydown', (e) => {
-        const keyMap = {'1':0, '2':1, '3':2, '4':3, '5':4, '6':5, '7':6, '8':7, '9':8, '0':9};
-        if (keyMap[e.key] !== undefined) {
-          initAudioContext();
-          const padIdx = keyMap[e.key];
-          triggerPad(padIdx);
-          const padBtn = document.querySelector(`.btnPad[data-pad-index="${padIdx}"]`);
-          if (padBtn) { padBtn.classList.add('pad-active'); setTimeout(() => padBtn.classList.remove('pad-active'), 140); }
-        }
-      });
-
-      const handleCanvasTouch = (e) => {
-        initAudioContext();
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const clickX = Math.floor(((clientX - rect.left) / rect.width) * CANVAS_SIZE);
-        const clickY = Math.floor(((clientY - rect.top) / rect.height) * CANVAS_SIZE);
-        triggerSparks(clickX, clickY, 30);
-        triggerPad(0);
-      };
-
-      canvas.addEventListener('click', handleCanvasTouch);
-      document.getElementById('chkGrid').addEventListener('change', (e) => showGrid = e.target.checked);
-
-      document.getElementById('btnConnectSerial').addEventListener('click', toggleSerialConnection);
-
-      const modal = document.getElementById('modalFirmware');
-      document.getElementById('btnOpenCodeModal').addEventListener('click', () => modal.classList.remove('hidden'));
-      document.getElementById('btnCloseCodeModal').addEventListener('click', () => modal.classList.add('hidden'));
-
-      document.getElementById('btnCopyCode').addEventListener('click', () => {
-        const codeText = document.getElementById('codeBlock').innerText;
-        navigator.clipboard.writeText(codeText).then(() => { alert("¡Código C++ copiado al portapapeles!"); });
-      });
-
-      document.getElementById('btnClearLog').addEventListener('click', () => {
-        document.getElementById('txtSerialLog').innerHTML = '';
-      });
-
-      requestAnimationFrame(renderLoop);
-    });
-  </script>
-</body>
-</html>
+`;
+$('fw').textContent=FW;
+$('code').onclick=()=>$('modal').style.display='flex';$('cl').onclick=()=>$('modal').style.display='none';
+$('cp').onclick=()=>navigator.clipboard.writeText(FW).then(()=>{$('cp').textContent='¡COPIADO!';setTimeout(()=>$('cp').textContent='COPIAR',1500)},()=>{const r=document.createRange();r.selectNodeContents($('fw'));getSelection().removeAllRanges();getSelection().addRange(r)});
+
+/* ---------- CANVAS 64x64: Creeper ---------- */
+const cv=$('cv'),cx=cv.getContext('2d'),parts=[];let fc=0,pulse=0,fl=0,flc='#fff',tint=0;
+const GR=['#00ff66','#00c040','#008a2e','#0b5a1c'];
+const BOX=[[22,8,20,20],[26,28,12,16],[22,44,9,12],[33,44,9,12]],FACE=[[26,14,4,5],[34,14,4,5],[30,19,4,6],[28,22,2,6],[34,22,2,6]];
+function boom(){const w=$('scr');w.classList.remove('shk');void w.offsetWidth;w.classList.add('shk')}
+function bump(v){pulse=Math.max(pulse,v)}
+function flash(c){flc=c;fl=.6;tint=6}
+function spark(x,y,n){const cs=['#ffd700','#a855f7','#00ff66','#fff'];for(let i=0;i<n;i++){const a=Math.random()*6.28,s=Math.random()*3+.5;parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:12+Math.random()*18|0,c:cs[i%4]})}}
+function draw(){
+ fc++;cx.fillStyle='#030508';cx.fillRect(0,0,64,64);
+ for(let i=0;i<10;i++){const on=(mask>>i&1)*18,h=Math.abs(Math.sin(fc*.1+i*.8))*(loops.size?16:6)+4+on;
+  cx.globalAlpha=.35;cx.fillStyle=['#a855f7','#ffd700','#00ff66'][i%3];cx.fillRect(2+i*6,64-h,4,h)}
+ cx.globalAlpha=1;cx.save();cx.translate(32,34+Math.sin(fc*.08)*1.5);cx.scale(1+pulse*.2,1-pulse*.12);cx.translate(-32,-34);
+ BOX.forEach(([x,y,w,h])=>{for(let i=0;i<w;i++)for(let j=0;j<h;j++){cx.fillStyle=tint>0&&fc%2?'#f33':GR[((x+i)*7+(y+j)*13+((x+i)*(y+j)>>2))%4];cx.fillRect(x+i,y+j,1,1)}});
+ cx.fillStyle='#000';FACE.forEach(r=>cx.fillRect(...r));cx.restore();
+ for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;if(--p.l<=0){parts.splice(i,1);continue}cx.fillStyle=p.c;cx.fillRect(p.x|0,p.y|0,1,1)}
+ if(fl>0){cx.globalAlpha=fl;cx.fillStyle=flc;cx.fillRect(0,0,64,64);cx.globalAlpha=1;fl-=.06}
+ if(tint>0)tint--;if(pulse>0)pulse-=.05;
+ $('fx').textContent=loops.size?loops.size+' LOOP(S)':'EN ESPERA';
+ requestAnimationFrame(draw)}
+cv.onclick=e=>{const r=cv.getBoundingClientRect();spark((e.clientX-r.left)/r.width*64,(e.clientY-r.top)/r.height*64,30);fx(2)};
+
+/* ---------- INICIO ---------- */
+$('rVol').oninput=e=>{vol=e.target.value/100;$('lVol').textContent=e.target.value+'%';if(master)master.gain.setTargetAtTime(vol,A.currentTime,.02)};
+$('rBpm').oninput=e=>{bpm=+e.target.value;$('lBpm').textContent=bpm};
+$('rF').oninput=e=>{init();setFilter(+e.target.value)};
+$('rD').oninput=e=>{$('lD').textContent=e.target.value+'%';setDrive(+e.target.value)};
+$('stop').onclick=()=>{init();stopAll()};
+$('q').oninput=grid;
+$('crt').onchange=e=>$('scr').classList.toggle('crt',e.target.checked);
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'&&e.target.type==='text')return;const k='1234567890'.indexOf(e.key);if(k>=0)hit(k)});
+const unlock=()=>{init();$('ov').style.display='none'};
+$('ov').addEventListener('pointerdown',unlock);
+document.addEventListener('visibilitychange',()=>{if(A&&!document.hidden)A.resume()});
+tabs();grid();pads();mkLeds();requestAnimationFrame(draw);
+</script></body></html>
